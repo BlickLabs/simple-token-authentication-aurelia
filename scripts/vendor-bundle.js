@@ -26918,6 +26918,3828 @@ define('aurelia-templating-binding',['exports', 'aurelia-logging', 'aurelia-bind
   }
 });
 define('text',{});
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define('i18next/i18next',factory) :
+	(global.i18next = factory());
+}(this, (function () { 'use strict';
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+  return typeof obj;
+} : function (obj) {
+  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+};
+
+
+
+
+
+
+
+
+
+
+
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+
+
+
+
+
+
+
+
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
+
+
+
+var inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+
+
+
+
+
+
+
+
+
+
+var possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
+
+
+
+
+var slicedToArray = function () {
+  function sliceIterator(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"]) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
+  }
+
+  return function (arr, i) {
+    if (Array.isArray(arr)) {
+      return arr;
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i);
+    } else {
+      throw new TypeError("Invalid attempt to destructure non-iterable instance");
+    }
+  };
+}();
+
+var consoleLogger = {
+  type: 'logger',
+
+  log: function log(args) {
+    this._output('log', args);
+  },
+  warn: function warn(args) {
+    this._output('warn', args);
+  },
+  error: function error(args) {
+    this._output('error', args);
+  },
+  _output: function _output(type, args) {
+    if (console && console[type]) console[type].apply(console, Array.prototype.slice.call(args));
+  }
+};
+
+var Logger = function () {
+  function Logger(concreteLogger) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    classCallCheck(this, Logger);
+
+    this.init(concreteLogger, options);
+  }
+
+  Logger.prototype.init = function init(concreteLogger) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    this.prefix = options.prefix || 'i18next:';
+    this.logger = concreteLogger || consoleLogger;
+    this.options = options;
+    this.debug = options.debug === false ? false : true;
+  };
+
+  Logger.prototype.setDebug = function setDebug(bool) {
+    this.debug = bool;
+  };
+
+  Logger.prototype.log = function log() {
+    this.forward(arguments, 'log', '', true);
+  };
+
+  Logger.prototype.warn = function warn() {
+    this.forward(arguments, 'warn', '', true);
+  };
+
+  Logger.prototype.error = function error() {
+    this.forward(arguments, 'error', '');
+  };
+
+  Logger.prototype.deprecate = function deprecate() {
+    this.forward(arguments, 'warn', 'WARNING DEPRECATED: ', true);
+  };
+
+  Logger.prototype.forward = function forward(args, lvl, prefix, debugOnly) {
+    if (debugOnly && !this.debug) return;
+    if (typeof args[0] === 'string') args[0] = prefix + this.prefix + ' ' + args[0];
+    this.logger[lvl](args);
+  };
+
+  Logger.prototype.create = function create(moduleName) {
+    var sub = new Logger(this.logger, _extends({ prefix: this.prefix + ':' + moduleName + ':' }, this.options));
+
+    return sub;
+  };
+
+  // createInstance(options = {}) {
+  //   return new Logger(options, callback);
+  // }
+
+  return Logger;
+}();
+
+
+
+var baseLogger = new Logger();
+
+var EventEmitter = function () {
+	function EventEmitter() {
+		classCallCheck(this, EventEmitter);
+
+		this.observers = {};
+	}
+
+	EventEmitter.prototype.on = function on(events, listener) {
+		var _this = this;
+
+		events.split(' ').forEach(function (event) {
+			_this.observers[event] = _this.observers[event] || [];
+			_this.observers[event].push(listener);
+		});
+	};
+
+	EventEmitter.prototype.off = function off(event, listener) {
+		var _this2 = this;
+
+		if (!this.observers[event]) {
+			return;
+		}
+
+		this.observers[event].forEach(function () {
+			if (!listener) {
+				delete _this2.observers[event];
+			} else {
+				var index = _this2.observers[event].indexOf(listener);
+				if (index > -1) {
+					_this2.observers[event].splice(index, 1);
+				}
+			}
+		});
+	};
+
+	EventEmitter.prototype.emit = function emit(event) {
+		for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+			args[_key - 1] = arguments[_key];
+		}
+
+		if (this.observers[event]) {
+			var cloned = [].concat(this.observers[event]);
+			cloned.forEach(function (observer) {
+				observer.apply(undefined, args);
+			});
+		}
+
+		if (this.observers['*']) {
+			var _cloned = [].concat(this.observers['*']);
+			_cloned.forEach(function (observer) {
+				var _ref;
+
+				observer.apply(observer, (_ref = [event]).concat.apply(_ref, args));
+			});
+		}
+	};
+
+	return EventEmitter;
+}();
+
+function makeString(object) {
+  if (object == null) return '';
+  return '' + object;
+}
+
+function copy(a, s, t) {
+  a.forEach(function (m) {
+    if (s[m]) t[m] = s[m];
+  });
+}
+
+function getLastOfPath(object, path, Empty) {
+  function cleanKey(key) {
+    return key && key.indexOf('###') > -1 ? key.replace(/###/g, '.') : key;
+  }
+
+  function canNotTraverseDeeper() {
+    return !object || typeof object === 'string';
+  }
+
+  var stack = typeof path !== 'string' ? [].concat(path) : path.split('.');
+  while (stack.length > 1) {
+    if (canNotTraverseDeeper()) return {};
+
+    var key = cleanKey(stack.shift());
+    if (!object[key] && Empty) object[key] = new Empty();
+    object = object[key];
+  }
+
+  if (canNotTraverseDeeper()) return {};
+  return {
+    obj: object,
+    k: cleanKey(stack.shift())
+  };
+}
+
+function setPath(object, path, newValue) {
+  var _getLastOfPath = getLastOfPath(object, path, Object),
+      obj = _getLastOfPath.obj,
+      k = _getLastOfPath.k;
+
+  obj[k] = newValue;
+}
+
+function pushPath(object, path, newValue, concat) {
+  var _getLastOfPath2 = getLastOfPath(object, path, Object),
+      obj = _getLastOfPath2.obj,
+      k = _getLastOfPath2.k;
+
+  obj[k] = obj[k] || [];
+  if (concat) obj[k] = obj[k].concat(newValue);
+  if (!concat) obj[k].push(newValue);
+}
+
+function getPath(object, path) {
+  var _getLastOfPath3 = getLastOfPath(object, path),
+      obj = _getLastOfPath3.obj,
+      k = _getLastOfPath3.k;
+
+  if (!obj) return undefined;
+  return obj[k];
+}
+
+function deepExtend(target, source, overwrite) {
+  for (var prop in source) {
+    if (prop in target) {
+      // If we reached a leaf string in target or source then replace with source or skip depending on the 'overwrite' switch
+      if (typeof target[prop] === 'string' || target[prop] instanceof String || typeof source[prop] === 'string' || source[prop] instanceof String) {
+        if (overwrite) target[prop] = source[prop];
+      } else {
+        deepExtend(target[prop], source[prop], overwrite);
+      }
+    } else {
+      target[prop] = source[prop];
+    }
+  }return target;
+}
+
+function regexEscape(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+}
+
+/* eslint-disable */
+var _entityMap = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': '&quot;',
+  "'": '&#39;',
+  "/": '&#x2F;'
+};
+/* eslint-enable */
+
+function escape(data) {
+  if (typeof data === 'string') {
+    return data.replace(/[&<>"'\/]/g, function (s) {
+      return _entityMap[s];
+    });
+  } else {
+    return data;
+  }
+}
+
+var ResourceStore = function (_EventEmitter) {
+  inherits(ResourceStore, _EventEmitter);
+
+  function ResourceStore() {
+    var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { ns: ['translation'], defaultNS: 'translation' };
+    classCallCheck(this, ResourceStore);
+
+    var _this = possibleConstructorReturn(this, _EventEmitter.call(this));
+
+    _this.data = data;
+    _this.options = options;
+    return _this;
+  }
+
+  ResourceStore.prototype.addNamespaces = function addNamespaces(ns) {
+    if (this.options.ns.indexOf(ns) < 0) {
+      this.options.ns.push(ns);
+    }
+  };
+
+  ResourceStore.prototype.removeNamespaces = function removeNamespaces(ns) {
+    var index = this.options.ns.indexOf(ns);
+    if (index > -1) {
+      this.options.ns.splice(index, 1);
+    }
+  };
+
+  ResourceStore.prototype.getResource = function getResource(lng, ns, key) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    var keySeparator = options.keySeparator || this.options.keySeparator;
+    if (keySeparator === undefined) keySeparator = '.';
+
+    var path = [lng, ns];
+    if (key && typeof key !== 'string') path = path.concat(key);
+    if (key && typeof key === 'string') path = path.concat(keySeparator ? key.split(keySeparator) : key);
+
+    if (lng.indexOf('.') > -1) {
+      path = lng.split('.');
+    }
+
+    return getPath(this.data, path);
+  };
+
+  ResourceStore.prototype.addResource = function addResource(lng, ns, key, value) {
+    var options = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : { silent: false };
+
+    var keySeparator = this.options.keySeparator;
+    if (keySeparator === undefined) keySeparator = '.';
+
+    var path = [lng, ns];
+    if (key) path = path.concat(keySeparator ? key.split(keySeparator) : key);
+
+    if (lng.indexOf('.') > -1) {
+      path = lng.split('.');
+      value = ns;
+      ns = path[1];
+    }
+
+    this.addNamespaces(ns);
+
+    setPath(this.data, path, value);
+
+    if (!options.silent) this.emit('added', lng, ns, key, value);
+  };
+
+  ResourceStore.prototype.addResources = function addResources(lng, ns, resources) {
+    for (var m in resources) {
+      if (typeof resources[m] === 'string') this.addResource(lng, ns, m, resources[m], { silent: true });
+    }
+    this.emit('added', lng, ns, resources);
+  };
+
+  ResourceStore.prototype.addResourceBundle = function addResourceBundle(lng, ns, resources, deep, overwrite) {
+    var path = [lng, ns];
+    if (lng.indexOf('.') > -1) {
+      path = lng.split('.');
+      deep = resources;
+      resources = ns;
+      ns = path[1];
+    }
+
+    this.addNamespaces(ns);
+
+    var pack = getPath(this.data, path) || {};
+
+    if (deep) {
+      deepExtend(pack, resources, overwrite);
+    } else {
+      pack = _extends({}, pack, resources);
+    }
+
+    setPath(this.data, path, pack);
+
+    this.emit('added', lng, ns, resources);
+  };
+
+  ResourceStore.prototype.removeResourceBundle = function removeResourceBundle(lng, ns) {
+    if (this.hasResourceBundle(lng, ns)) {
+      delete this.data[lng][ns];
+    }
+    this.removeNamespaces(ns);
+
+    this.emit('removed', lng, ns);
+  };
+
+  ResourceStore.prototype.hasResourceBundle = function hasResourceBundle(lng, ns) {
+    return this.getResource(lng, ns) !== undefined;
+  };
+
+  ResourceStore.prototype.getResourceBundle = function getResourceBundle(lng, ns) {
+    if (!ns) ns = this.options.defaultNS;
+
+    // TODO: COMPATIBILITY remove extend in v2.1.0
+    if (this.options.compatibilityAPI === 'v1') return _extends({}, this.getResource(lng, ns));
+
+    return this.getResource(lng, ns);
+  };
+
+  ResourceStore.prototype.toJSON = function toJSON() {
+    return this.data;
+  };
+
+  return ResourceStore;
+}(EventEmitter);
+
+var postProcessor = {
+
+  processors: {},
+
+  addPostProcessor: function addPostProcessor(module) {
+    this.processors[module.name] = module;
+  },
+  handle: function handle(processors, value, key, options, translator) {
+    var _this = this;
+
+    processors.forEach(function (processor) {
+      if (_this.processors[processor]) value = _this.processors[processor].process(value, key, options, translator);
+    });
+
+    return value;
+  }
+};
+
+function convertInterpolation(options) {
+
+  options.interpolation = {
+    unescapeSuffix: 'HTML'
+  };
+
+  options.interpolation.prefix = options.interpolationPrefix || '__';
+  options.interpolation.suffix = options.interpolationSuffix || '__';
+  options.interpolation.escapeValue = options.escapeInterpolation || false;
+
+  options.interpolation.nestingPrefix = options.reusePrefix || '$t(';
+  options.interpolation.nestingSuffix = options.reuseSuffix || ')';
+
+  return options;
+}
+
+function convertAPIOptions(options) {
+  if (options.resStore) options.resources = options.resStore;
+
+  if (options.ns && options.ns.defaultNs) {
+    options.defaultNS = options.ns.defaultNs;
+    options.ns = options.ns.namespaces;
+  } else {
+    options.defaultNS = options.ns || 'translation';
+  }
+
+  if (options.fallbackToDefaultNS && options.defaultNS) options.fallbackNS = options.defaultNS;
+
+  options.saveMissing = options.sendMissing;
+  options.saveMissingTo = options.sendMissingTo || 'current';
+  options.returnNull = options.fallbackOnNull ? false : true;
+  options.returnEmptyString = options.fallbackOnEmpty ? false : true;
+  options.returnObjects = options.returnObjectTrees;
+  options.joinArrays = '\n';
+
+  options.returnedObjectHandler = options.objectTreeKeyHandler;
+  options.parseMissingKeyHandler = options.parseMissingKey;
+  options.appendNamespaceToMissingKey = true;
+
+  options.nsSeparator = options.nsseparator || ':';
+  options.keySeparator = options.keyseparator || '.';
+
+  if (options.shortcutFunction === 'sprintf') {
+    options.overloadTranslationOptionHandler = function (args) {
+      var values = [];
+
+      for (var i = 1; i < args.length; i++) {
+        values.push(args[i]);
+      }
+
+      return {
+        postProcess: 'sprintf',
+        sprintf: values
+      };
+    };
+  }
+
+  options.whitelist = options.lngWhitelist;
+  options.preload = options.preload;
+  if (options.load === 'current') options.load = 'currentOnly';
+  if (options.load === 'unspecific') options.load = 'languageOnly';
+
+  // backend
+  options.backend = options.backend || {};
+  options.backend.loadPath = options.resGetPath || 'locales/__lng__/__ns__.json';
+  options.backend.addPath = options.resPostPath || 'locales/add/__lng__/__ns__';
+  options.backend.allowMultiLoading = options.dynamicLoad;
+
+  // cache
+  options.cache = options.cache || {};
+  options.cache.prefix = 'res_';
+  options.cache.expirationTime = 7 * 24 * 60 * 60 * 1000;
+  options.cache.enabled = options.useLocalStorage ? true : false;
+
+  options = convertInterpolation(options);
+  if (options.defaultVariables) options.interpolation.defaultVariables = options.defaultVariables;
+
+  // TODO: deprecation
+  // if (options.getAsync === false) throw deprecation error
+
+  return options;
+}
+
+function convertJSONOptions(options) {
+  options = convertInterpolation(options);
+  options.joinArrays = '\n';
+
+  return options;
+}
+
+function convertTOptions(options) {
+  if (options.interpolationPrefix || options.interpolationSuffix || options.escapeInterpolation) {
+    options = convertInterpolation(options);
+  }
+
+  options.nsSeparator = options.nsseparator;
+  options.keySeparator = options.keyseparator;
+
+  options.returnObjects = options.returnObjectTrees;
+
+  return options;
+}
+
+function appendBackwardsAPI(i18n) {
+  i18n.lng = function () {
+    baseLogger.deprecate('i18next.lng() can be replaced by i18next.language for detected language or i18next.languages for languages ordered by translation lookup.');
+    return i18n.services.languageUtils.toResolveHierarchy(i18n.language)[0];
+  };
+
+  i18n.preload = function (lngs, cb) {
+    baseLogger.deprecate('i18next.preload() can be replaced with i18next.loadLanguages()');
+    i18n.loadLanguages(lngs, cb);
+  };
+
+  i18n.setLng = function (lng, options, callback) {
+    baseLogger.deprecate('i18next.setLng() can be replaced with i18next.changeLanguage() or i18next.getFixedT() to get a translation function with fixed language or namespace.');
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
+    if (!options) options = {};
+
+    if (options.fixLng === true) {
+      if (callback) return callback(null, i18n.getFixedT(lng));
+    }
+
+    i18n.changeLanguage(lng, callback);
+  };
+
+  i18n.addPostProcessor = function (name, fc) {
+    baseLogger.deprecate('i18next.addPostProcessor() can be replaced by i18next.use({ type: \'postProcessor\', name: \'name\', process: fc })');
+    i18n.use({
+      type: 'postProcessor',
+      name: name,
+      process: fc
+    });
+  };
+}
+
+var Translator = function (_EventEmitter) {
+  inherits(Translator, _EventEmitter);
+
+  function Translator(services) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    classCallCheck(this, Translator);
+
+    var _this = possibleConstructorReturn(this, _EventEmitter.call(this));
+
+    copy(['resourceStore', 'languageUtils', 'pluralResolver', 'interpolator', 'backendConnector'], services, _this);
+
+    _this.options = options;
+    _this.logger = baseLogger.create('translator');
+    return _this;
+  }
+
+  Translator.prototype.changeLanguage = function changeLanguage(lng) {
+    if (lng) this.language = lng;
+  };
+
+  Translator.prototype.exists = function exists(key) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : { interpolation: {} };
+
+    if (this.options.compatibilityAPI === 'v1') {
+      options = convertTOptions(options);
+    }
+
+    return this.resolve(key, options) !== undefined;
+  };
+
+  Translator.prototype.extractFromKey = function extractFromKey(key, options) {
+    var nsSeparator = options.nsSeparator || this.options.nsSeparator;
+    if (nsSeparator === undefined) nsSeparator = ':';
+    var keySeparator = options.keySeparator || this.options.keySeparator || '.';
+
+    var namespaces = options.ns || this.options.defaultNS;
+    if (nsSeparator && key.indexOf(nsSeparator) > -1) {
+      var parts = key.split(nsSeparator);
+      if (nsSeparator !== keySeparator || nsSeparator === keySeparator && this.options.ns.indexOf(parts[0]) > -1) namespaces = parts.shift();
+      key = parts.join(keySeparator);
+    }
+    if (typeof namespaces === 'string') namespaces = [namespaces];
+
+    return {
+      key: key,
+      namespaces: namespaces
+    };
+  };
+
+  Translator.prototype.translate = function translate(keys) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    if ((typeof options === 'undefined' ? 'undefined' : _typeof(options)) !== 'object') {
+      options = this.options.overloadTranslationOptionHandler(arguments);
+    } else if (this.options.compatibilityAPI === 'v1') {
+      options = convertTOptions(options);
+    }
+
+    // non valid keys handling
+    if (keys === undefined || keys === null || keys === '') return '';
+    if (typeof keys === 'number') keys = String(keys);
+    if (typeof keys === 'string') keys = [keys];
+
+    // separators
+    var keySeparator = options.keySeparator || this.options.keySeparator || '.';
+
+    // get namespace(s)
+
+    var _extractFromKey = this.extractFromKey(keys[keys.length - 1], options),
+        key = _extractFromKey.key,
+        namespaces = _extractFromKey.namespaces;
+
+    var namespace = namespaces[namespaces.length - 1];
+
+    // return key on CIMode
+    var lng = options.lng || this.language;
+    var appendNamespaceToCIMode = options.appendNamespaceToCIMode || this.options.appendNamespaceToCIMode;
+    if (lng && lng.toLowerCase() === 'cimode') {
+      if (appendNamespaceToCIMode) {
+        var nsSeparator = options.nsSeparator || this.options.nsSeparator;
+        return namespace + nsSeparator + key;
+      }
+
+      return key;
+    }
+
+    // resolve from store
+    var res = this.resolve(keys, options);
+
+    var resType = Object.prototype.toString.apply(res);
+    var noObject = ['[object Number]', '[object Function]', '[object RegExp]'];
+    var joinArrays = options.joinArrays !== undefined ? options.joinArrays : this.options.joinArrays;
+
+    // object
+    if (res && typeof res !== 'string' && noObject.indexOf(resType) < 0 && !(joinArrays && resType === '[object Array]')) {
+      if (!options.returnObjects && !this.options.returnObjects) {
+        this.logger.warn('accessing an object - but returnObjects options is not enabled!');
+        return this.options.returnedObjectHandler ? this.options.returnedObjectHandler(key, res, options) : 'key \'' + key + ' (' + this.language + ')\' returned an object instead of string.';
+      }
+
+      // if we got a separator we loop over children - else we just return object as is
+      // as having it set to false means no hierarchy so no lookup for nested values
+      if (options.keySeparator || this.options.keySeparator) {
+        var copy$$1 = resType === '[object Array]' ? [] : {}; // apply child translation on a copy
+
+        for (var m in res) {
+          if (res.hasOwnProperty(m)) {
+            copy$$1[m] = this.translate('' + key + keySeparator + m, _extends({}, options, { joinArrays: false, ns: namespaces }));
+          }
+        }
+        res = copy$$1;
+      }
+    }
+    // array special treatment
+    else if (joinArrays && resType === '[object Array]') {
+        res = res.join(joinArrays);
+        if (res) res = this.extendTranslation(res, key, options);
+      }
+      // string, empty or null
+      else {
+          var usedDefault = false,
+              usedKey = false;
+
+          // fallback value
+          if (!this.isValidLookup(res) && options.defaultValue !== undefined) {
+            usedDefault = true;
+            res = options.defaultValue;
+          }
+          if (!this.isValidLookup(res)) {
+            usedKey = true;
+            res = key;
+          }
+
+          // save missing
+          if (usedKey || usedDefault) {
+            this.logger.log('missingKey', lng, namespace, key, res);
+
+            var lngs = [];
+            var fallbackLngs = this.languageUtils.getFallbackCodes(this.options.fallbackLng, options.lng || this.language);
+            if (this.options.saveMissingTo === 'fallback' && fallbackLngs && fallbackLngs[0]) {
+              for (var i = 0; i < fallbackLngs.length; i++) {
+                lngs.push(fallbackLngs[i]);
+              }
+            } else if (this.options.saveMissingTo === 'all') {
+              lngs = this.languageUtils.toResolveHierarchy(options.lng || this.language);
+            } else {
+              //(this.options.saveMissingTo === 'current' || (this.options.saveMissingTo === 'fallback' && this.options.fallbackLng[0] === false) ) {
+              lngs.push(options.lng || this.language);
+            }
+
+            if (this.options.saveMissing) {
+              if (this.options.missingKeyHandler) {
+                this.options.missingKeyHandler(lngs, namespace, key, res);
+              } else if (this.backendConnector && this.backendConnector.saveMissing) {
+                this.backendConnector.saveMissing(lngs, namespace, key, res);
+              }
+            }
+
+            this.emit('missingKey', lngs, namespace, key, res);
+          }
+
+          // extend
+          res = this.extendTranslation(res, key, options);
+
+          // append namespace if still key
+          if (usedKey && res === key && this.options.appendNamespaceToMissingKey) res = namespace + ':' + key;
+
+          // parseMissingKeyHandler
+          if (usedKey && this.options.parseMissingKeyHandler) res = this.options.parseMissingKeyHandler(res);
+        }
+
+    // return
+    return res;
+  };
+
+  Translator.prototype.extendTranslation = function extendTranslation(res, key, options) {
+    var _this2 = this;
+
+    if (options.interpolation) this.interpolator.init(_extends({}, options, { interpolation: _extends({}, this.options.interpolation, options.interpolation) }));
+
+    // interpolate
+    var data = options.replace && typeof options.replace !== 'string' ? options.replace : options;
+    if (this.options.interpolation.defaultVariables) data = _extends({}, this.options.interpolation.defaultVariables, data);
+    res = this.interpolator.interpolate(res, data, options.lng || this.language);
+
+    // nesting
+    if (options.nest !== false) res = this.interpolator.nest(res, function () {
+      for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      return _this2.translate.apply(_this2, args);
+    }, options);
+
+    if (options.interpolation) this.interpolator.reset();
+
+    // post process
+    var postProcess = options.postProcess || this.options.postProcess;
+    var postProcessorNames = typeof postProcess === 'string' ? [postProcess] : postProcess;
+
+    if (res !== undefined && postProcessorNames && postProcessorNames.length && options.applyPostProcessor !== false) {
+      res = postProcessor.handle(postProcessorNames, res, key, options, this);
+    }
+
+    return res;
+  };
+
+  Translator.prototype.resolve = function resolve(keys) {
+    var _this3 = this;
+
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    var found = void 0;
+
+    if (typeof keys === 'string') keys = [keys];
+
+    // forEach possible key
+    keys.forEach(function (k) {
+      if (_this3.isValidLookup(found)) return;
+
+      var _extractFromKey2 = _this3.extractFromKey(k, options),
+          key = _extractFromKey2.key,
+          namespaces = _extractFromKey2.namespaces;
+
+      if (_this3.options.fallbackNS) namespaces = namespaces.concat(_this3.options.fallbackNS);
+
+      var needsPluralHandling = options.count !== undefined && typeof options.count !== 'string';
+      var needsContextHandling = options.context !== undefined && typeof options.context === 'string' && options.context !== '';
+
+      var codes = options.lngs ? options.lngs : _this3.languageUtils.toResolveHierarchy(options.lng || _this3.language);
+
+      namespaces.forEach(function (ns) {
+        if (_this3.isValidLookup(found)) return;
+
+        codes.forEach(function (code) {
+          if (_this3.isValidLookup(found)) return;
+
+          var finalKey = key;
+          var finalKeys = [finalKey];
+
+          var pluralSuffix = void 0;
+          if (needsPluralHandling) pluralSuffix = _this3.pluralResolver.getSuffix(code, options.count);
+
+          // fallback for plural if context not found
+          if (needsPluralHandling && needsContextHandling) finalKeys.push(finalKey + pluralSuffix);
+
+          // get key for context if needed
+          if (needsContextHandling) finalKeys.push(finalKey += '' + _this3.options.contextSeparator + options.context);
+
+          // get key for plural if needed
+          if (needsPluralHandling) finalKeys.push(finalKey += pluralSuffix);
+
+          // iterate over finalKeys starting with most specific pluralkey (-> contextkey only) -> singularkey only
+          var possibleKey = void 0;
+          while (possibleKey = finalKeys.pop()) {
+            if (_this3.isValidLookup(found)) continue;
+            found = _this3.getResource(code, ns, possibleKey, options);
+          }
+        });
+      });
+    });
+
+    return found;
+  };
+
+  Translator.prototype.isValidLookup = function isValidLookup(res) {
+    return res !== undefined && !(!this.options.returnNull && res === null) && !(!this.options.returnEmptyString && res === '');
+  };
+
+  Translator.prototype.getResource = function getResource(code, ns, key) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+    return this.resourceStore.getResource(code, ns, key, options);
+  };
+
+  return Translator;
+}(EventEmitter);
+
+function capitalize(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+var LanguageUtil = function () {
+  function LanguageUtil(options) {
+    classCallCheck(this, LanguageUtil);
+
+    this.options = options;
+
+    this.whitelist = this.options.whitelist || false;
+    this.logger = baseLogger.create('languageUtils');
+  }
+
+  LanguageUtil.prototype.getScriptPartFromCode = function getScriptPartFromCode(code) {
+    if (!code || code.indexOf('-') < 0) return null;
+
+    var p = code.split('-');
+    if (p.length === 2) return null;
+    p.pop();
+    return this.formatLanguageCode(p.join('-'));
+  };
+
+  LanguageUtil.prototype.getLanguagePartFromCode = function getLanguagePartFromCode(code) {
+    if (!code || code.indexOf('-') < 0) return code;
+
+    var p = code.split('-');
+    return this.formatLanguageCode(p[0]);
+  };
+
+  LanguageUtil.prototype.formatLanguageCode = function formatLanguageCode(code) {
+    // http://www.iana.org/assignments/language-tags/language-tags.xhtml
+    if (typeof code === 'string' && code.indexOf('-') > -1) {
+      var specialCases = ['hans', 'hant', 'latn', 'cyrl', 'cans', 'mong', 'arab'];
+      var p = code.split('-');
+
+      if (this.options.lowerCaseLng) {
+        p = p.map(function (part) {
+          return part.toLowerCase();
+        });
+      } else if (p.length === 2) {
+        p[0] = p[0].toLowerCase();
+        p[1] = p[1].toUpperCase();
+
+        if (specialCases.indexOf(p[1].toLowerCase()) > -1) p[1] = capitalize(p[1].toLowerCase());
+      } else if (p.length === 3) {
+        p[0] = p[0].toLowerCase();
+
+        // if lenght 2 guess it's a country
+        if (p[1].length === 2) p[1] = p[1].toUpperCase();
+        if (p[0] !== 'sgn' && p[2].length === 2) p[2] = p[2].toUpperCase();
+
+        if (specialCases.indexOf(p[1].toLowerCase()) > -1) p[1] = capitalize(p[1].toLowerCase());
+        if (specialCases.indexOf(p[2].toLowerCase()) > -1) p[2] = capitalize(p[2].toLowerCase());
+      }
+
+      return p.join('-');
+    } else {
+      return this.options.cleanCode || this.options.lowerCaseLng ? code.toLowerCase() : code;
+    }
+  };
+
+  LanguageUtil.prototype.isWhitelisted = function isWhitelisted(code) {
+    if (this.options.load === 'languageOnly' || this.options.nonExplicitWhitelist) {
+      code = this.getLanguagePartFromCode(code);
+    }
+    return !this.whitelist || !this.whitelist.length || this.whitelist.indexOf(code) > -1;
+  };
+
+  LanguageUtil.prototype.getFallbackCodes = function getFallbackCodes(fallbacks, code) {
+    if (!fallbacks) return [];
+    if (typeof fallbacks === 'string') fallbacks = [fallbacks];
+    if (Object.prototype.toString.apply(fallbacks) === '[object Array]') return fallbacks;
+
+    if (!code) return fallbacks.default || [];
+
+    // asume we have an object defining fallbacks
+    var found = fallbacks[code];
+    if (!found) found = fallbacks[this.getScriptPartFromCode(code)];
+    if (!found) found = fallbacks[this.formatLanguageCode(code)];
+    if (!found) found = fallbacks.default;
+
+    return found || [];
+  };
+
+  LanguageUtil.prototype.toResolveHierarchy = function toResolveHierarchy(code, fallbackCode) {
+    var _this = this;
+
+    var fallbackCodes = this.getFallbackCodes(fallbackCode || this.options.fallbackLng || [], code);
+
+    var codes = [];
+    var addCode = function addCode(code) {
+      if (!code) return;
+      if (_this.isWhitelisted(code)) {
+        codes.push(code);
+      } else {
+        _this.logger.warn('rejecting non-whitelisted language code: ' + code);
+      }
+    };
+
+    if (typeof code === 'string' && code.indexOf('-') > -1) {
+      if (this.options.load !== 'languageOnly') addCode(this.formatLanguageCode(code));
+      if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') addCode(this.getScriptPartFromCode(code));
+      if (this.options.load !== 'currentOnly') addCode(this.getLanguagePartFromCode(code));
+    } else if (typeof code === 'string') {
+      addCode(this.formatLanguageCode(code));
+    }
+
+    fallbackCodes.forEach(function (fc) {
+      if (codes.indexOf(fc) < 0) addCode(_this.formatLanguageCode(fc));
+    });
+
+    return codes;
+  };
+
+  return LanguageUtil;
+}();
+
+// definition http://translate.sourceforge.net/wiki/l10n/pluralforms
+/* eslint-disable */
+var sets = [{ lngs: ['ach', 'ak', 'am', 'arn', 'br', 'fil', 'gun', 'ln', 'mfe', 'mg', 'mi', 'oc', 'tg', 'ti', 'tr', 'uz', 'wa'], nr: [1, 2], fc: 1 }, { lngs: ['af', 'an', 'ast', 'az', 'bg', 'bn', 'ca', 'da', 'de', 'dev', 'el', 'en', 'eo', 'es', 'es_ar', 'et', 'eu', 'fi', 'fo', 'fur', 'fy', 'gl', 'gu', 'ha', 'he', 'hi', 'hu', 'hy', 'ia', 'it', 'kn', 'ku', 'lb', 'mai', 'ml', 'mn', 'mr', 'nah', 'nap', 'nb', 'ne', 'nl', 'nn', 'no', 'nso', 'pa', 'pap', 'pms', 'ps', 'pt', 'pt_br', 'rm', 'sco', 'se', 'si', 'so', 'son', 'sq', 'sv', 'sw', 'ta', 'te', 'tk', 'ur', 'yo'], nr: [1, 2], fc: 2 }, { lngs: ['ay', 'bo', 'cgg', 'fa', 'id', 'ja', 'jbo', 'ka', 'kk', 'km', 'ko', 'ky', 'lo', 'ms', 'sah', 'su', 'th', 'tt', 'ug', 'vi', 'wo', 'zh'], nr: [1], fc: 3 }, { lngs: ['be', 'bs', 'dz', 'hr', 'ru', 'sr', 'uk'], nr: [1, 2, 5], fc: 4 }, { lngs: ['ar'], nr: [0, 1, 2, 3, 11, 100], fc: 5 }, { lngs: ['cs', 'sk'], nr: [1, 2, 5], fc: 6 }, { lngs: ['csb', 'pl'], nr: [1, 2, 5], fc: 7 }, { lngs: ['cy'], nr: [1, 2, 3, 8], fc: 8 }, { lngs: ['fr'], nr: [1, 2], fc: 9 }, { lngs: ['ga'], nr: [1, 2, 3, 7, 11], fc: 10 }, { lngs: ['gd'], nr: [1, 2, 3, 20], fc: 11 }, { lngs: ['is'], nr: [1, 2], fc: 12 }, { lngs: ['jv'], nr: [0, 1], fc: 13 }, { lngs: ['kw'], nr: [1, 2, 3, 4], fc: 14 }, { lngs: ['lt'], nr: [1, 2, 10], fc: 15 }, { lngs: ['lv'], nr: [1, 2, 0], fc: 16 }, { lngs: ['mk'], nr: [1, 2], fc: 17 }, { lngs: ['mnk'], nr: [0, 1, 2], fc: 18 }, { lngs: ['mt'], nr: [1, 2, 11, 20], fc: 19 }, { lngs: ['or'], nr: [2, 1], fc: 2 }, { lngs: ['ro'], nr: [1, 2, 20], fc: 20 }, { lngs: ['sl'], nr: [5, 1, 2, 3], fc: 21 }];
+
+var _rulesPluralsTypes = {
+  1: function _(n) {
+    return Number(n > 1);
+  },
+  2: function _(n) {
+    return Number(n != 1);
+  },
+  3: function _(n) {
+    return 0;
+  },
+  4: function _(n) {
+    return Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2);
+  },
+  5: function _(n) {
+    return Number(n === 0 ? 0 : n == 1 ? 1 : n == 2 ? 2 : n % 100 >= 3 && n % 100 <= 10 ? 3 : n % 100 >= 11 ? 4 : 5);
+  },
+  6: function _(n) {
+    return Number(n == 1 ? 0 : n >= 2 && n <= 4 ? 1 : 2);
+  },
+  7: function _(n) {
+    return Number(n == 1 ? 0 : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2);
+  },
+  8: function _(n) {
+    return Number(n == 1 ? 0 : n == 2 ? 1 : n != 8 && n != 11 ? 2 : 3);
+  },
+  9: function _(n) {
+    return Number(n >= 2);
+  },
+  10: function _(n) {
+    return Number(n == 1 ? 0 : n == 2 ? 1 : n < 7 ? 2 : n < 11 ? 3 : 4);
+  },
+  11: function _(n) {
+    return Number(n == 1 || n == 11 ? 0 : n == 2 || n == 12 ? 1 : n > 2 && n < 20 ? 2 : 3);
+  },
+  12: function _(n) {
+    return Number(n % 10 != 1 || n % 100 == 11);
+  },
+  13: function _(n) {
+    return Number(n !== 0);
+  },
+  14: function _(n) {
+    return Number(n == 1 ? 0 : n == 2 ? 1 : n == 3 ? 2 : 3);
+  },
+  15: function _(n) {
+    return Number(n % 10 == 1 && n % 100 != 11 ? 0 : n % 10 >= 2 && (n % 100 < 10 || n % 100 >= 20) ? 1 : 2);
+  },
+  16: function _(n) {
+    return Number(n % 10 == 1 && n % 100 != 11 ? 0 : n !== 0 ? 1 : 2);
+  },
+  17: function _(n) {
+    return Number(n == 1 || n % 10 == 1 ? 0 : 1);
+  },
+  18: function _(n) {
+    return Number(n == 0 ? 0 : n == 1 ? 1 : 2);
+  },
+  19: function _(n) {
+    return Number(n == 1 ? 0 : n === 0 || n % 100 > 1 && n % 100 < 11 ? 1 : n % 100 > 10 && n % 100 < 20 ? 2 : 3);
+  },
+  20: function _(n) {
+    return Number(n == 1 ? 0 : n === 0 || n % 100 > 0 && n % 100 < 20 ? 1 : 2);
+  },
+  21: function _(n) {
+    return Number(n % 100 == 1 ? 1 : n % 100 == 2 ? 2 : n % 100 == 3 || n % 100 == 4 ? 3 : 0);
+  }
+};
+/* eslint-enable */
+
+function createRules() {
+  var l,
+      rules = {};
+  sets.forEach(function (set$$1) {
+    set$$1.lngs.forEach(function (l) {
+      return rules[l] = {
+        numbers: set$$1.nr,
+        plurals: _rulesPluralsTypes[set$$1.fc]
+      };
+    });
+  });
+  return rules;
+}
+
+var PluralResolver = function () {
+  function PluralResolver(languageUtils) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+    classCallCheck(this, PluralResolver);
+
+    this.languageUtils = languageUtils;
+    this.options = options;
+
+    this.logger = baseLogger.create('pluralResolver');
+
+    this.rules = createRules();
+  }
+
+  PluralResolver.prototype.addRule = function addRule(lng, obj) {
+    this.rules[lng] = obj;
+  };
+
+  PluralResolver.prototype.getRule = function getRule(code) {
+    return this.rules[this.languageUtils.getLanguagePartFromCode(code)];
+  };
+
+  PluralResolver.prototype.needsPlural = function needsPlural(code) {
+    var rule = this.getRule(code);
+
+    return rule && rule.numbers.length <= 1 ? false : true;
+  };
+
+  PluralResolver.prototype.getSuffix = function getSuffix(code, count) {
+    var _this = this;
+
+    var rule = this.getRule(code);
+
+    if (rule) {
+      if (rule.numbers.length === 1) return ''; // only singular
+
+      var idx = rule.noAbs ? rule.plurals(count) : rule.plurals(Math.abs(count));
+      var suffix = rule.numbers[idx];
+
+      // special treatment for lngs only having singular and plural
+      if (this.options.simplifyPluralSuffix && rule.numbers.length === 2 && rule.numbers[0] === 1) {
+        if (suffix === 2) {
+          suffix = 'plural';
+        } else if (suffix === 1) {
+          suffix = '';
+        }
+      }
+
+      var returnSuffix = function returnSuffix() {
+        return _this.options.prepend && suffix.toString() ? _this.options.prepend + suffix.toString() : suffix.toString();
+      };
+
+      // COMPATIBILITY JSON
+      // v1
+      if (this.options.compatibilityJSON === 'v1') {
+        if (suffix === 1) return '';
+        if (typeof suffix === 'number') return '_plural_' + suffix.toString();
+        return returnSuffix();
+      }
+      // v2
+      else if (this.options.compatibilityJSON === 'v2' || rule.numbers.length === 2 && rule.numbers[0] === 1) {
+          return returnSuffix();
+        }
+        // v3 - gettext index
+        else if (rule.numbers.length === 2 && rule.numbers[0] === 1) {
+            return returnSuffix();
+          }
+      return this.options.prepend && idx.toString() ? this.options.prepend + idx.toString() : idx.toString();
+    } else {
+      this.logger.warn('no plural rule found for: ' + code);
+      return '';
+    }
+  };
+
+  return PluralResolver;
+}();
+
+var Interpolator = function () {
+  function Interpolator() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    classCallCheck(this, Interpolator);
+
+    this.logger = baseLogger.create('interpolator');
+
+    this.init(options, true);
+  }
+
+  Interpolator.prototype.init = function init() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var reset = arguments[1];
+
+    if (reset) {
+      this.options = options;
+      this.format = options.interpolation && options.interpolation.format || function (value) {
+        return value;
+      };
+      this.escape = options.interpolation && options.interpolation.escape || escape;
+    }
+    if (!options.interpolation) options.interpolation = { escapeValue: true };
+
+    var iOpts = options.interpolation;
+
+    this.escapeValue = iOpts.escapeValue !== undefined ? iOpts.escapeValue : true;
+
+    this.prefix = iOpts.prefix ? regexEscape(iOpts.prefix) : iOpts.prefixEscaped || '{{';
+    this.suffix = iOpts.suffix ? regexEscape(iOpts.suffix) : iOpts.suffixEscaped || '}}';
+
+    this.formatSeparator = iOpts.formatSeparator ? iOpts.formatSeparator : iOpts.formatSeparator || ',';
+
+    this.unescapePrefix = iOpts.unescapeSuffix ? '' : iOpts.unescapePrefix || '-';
+    this.unescapeSuffix = this.unescapePrefix ? '' : iOpts.unescapeSuffix || '';
+
+    this.nestingPrefix = iOpts.nestingPrefix ? regexEscape(iOpts.nestingPrefix) : iOpts.nestingPrefixEscaped || regexEscape('$t(');
+    this.nestingSuffix = iOpts.nestingSuffix ? regexEscape(iOpts.nestingSuffix) : iOpts.nestingSuffixEscaped || regexEscape(')');
+
+    // the regexp
+    this.resetRegExp();
+  };
+
+  Interpolator.prototype.reset = function reset() {
+    if (this.options) this.init(this.options);
+  };
+
+  Interpolator.prototype.resetRegExp = function resetRegExp() {
+    // the regexp
+    var regexpStr = this.prefix + '(.+?)' + this.suffix;
+    this.regexp = new RegExp(regexpStr, 'g');
+
+    var regexpUnescapeStr = this.prefix + this.unescapePrefix + '(.+?)' + this.unescapeSuffix + this.suffix;
+    this.regexpUnescape = new RegExp(regexpUnescapeStr, 'g');
+
+    var nestingRegexpStr = this.nestingPrefix + '(.+?)' + this.nestingSuffix;
+    this.nestingRegexp = new RegExp(nestingRegexpStr, 'g');
+  };
+
+  Interpolator.prototype.interpolate = function interpolate(str, data, lng) {
+    var _this = this;
+
+    var match = void 0,
+        value = void 0;
+
+    function regexSafe(val) {
+      return val.replace(/\$/g, '$$$$');
+    }
+
+    var handleFormat = function handleFormat(key) {
+      if (key.indexOf(_this.formatSeparator) < 0) return getPath(data, key);
+
+      var p = key.split(_this.formatSeparator);
+      var k = p.shift().trim();
+      var f = p.join(_this.formatSeparator).trim();
+
+      return _this.format(getPath(data, k), f, lng);
+    };
+
+    this.resetRegExp();
+
+    // unescape if has unescapePrefix/Suffix
+    while (match = this.regexpUnescape.exec(str)) {
+      var _value = handleFormat(match[1].trim());
+      str = str.replace(match[0], _value);
+      this.regexpUnescape.lastIndex = 0;
+    }
+
+    // regular escape on demand
+    while (match = this.regexp.exec(str)) {
+      value = handleFormat(match[1].trim());
+      if (typeof value !== 'string') value = makeString(value);
+      if (!value) {
+        this.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
+        value = '';
+      }
+      value = this.escapeValue ? regexSafe(this.escape(value)) : regexSafe(value);
+      str = str.replace(match[0], value);
+      this.regexp.lastIndex = 0;
+    }
+    return str;
+  };
+
+  Interpolator.prototype.nest = function nest(str, fc) {
+    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+    var match = void 0,
+        value = void 0;
+
+    var clonedOptions = _extends({}, options);
+    clonedOptions.applyPostProcessor = false; // avoid post processing on nested lookup
+
+    function handleHasOptions(key) {
+      if (key.indexOf(',') < 0) return key;
+
+      var p = key.split(',');
+      key = p.shift();
+      var optionsString = p.join(',');
+      optionsString = this.interpolate(optionsString, clonedOptions);
+      optionsString = optionsString.replace(/'/g, '"');
+
+      try {
+        clonedOptions = JSON.parse(optionsString);
+      } catch (e) {
+        this.logger.error('failed parsing options string in nesting for key ' + key, e);
+      }
+
+      return key;
+    }
+
+    // regular escape on demand
+    while (match = this.nestingRegexp.exec(str)) {
+      value = fc(handleHasOptions.call(this, match[1].trim()), clonedOptions);
+      if (typeof value !== 'string') value = makeString(value);
+      if (!value) {
+        this.logger.warn('missed to pass in variable ' + match[1] + ' for interpolating ' + str);
+        value = '';
+      }
+      // Nested keys should not be escaped by default #854
+      // value = this.escapeValue ? regexSafe(utils.escape(value)) : regexSafe(value);
+      str = str.replace(match[0], value);
+      this.regexp.lastIndex = 0;
+    }
+    return str;
+  };
+
+  return Interpolator;
+}();
+
+function remove(arr, what) {
+  var found = arr.indexOf(what);
+
+  while (found !== -1) {
+    arr.splice(found, 1);
+    found = arr.indexOf(what);
+  }
+}
+
+var Connector = function (_EventEmitter) {
+  inherits(Connector, _EventEmitter);
+
+  function Connector(backend, store, services) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    classCallCheck(this, Connector);
+
+    var _this = possibleConstructorReturn(this, _EventEmitter.call(this));
+
+    _this.backend = backend;
+    _this.store = store;
+    _this.services = services;
+    _this.options = options;
+    _this.logger = baseLogger.create('backendConnector');
+
+    _this.state = {};
+    _this.queue = [];
+
+    _this.backend && _this.backend.init && _this.backend.init(services, options.backend, options);
+    return _this;
+  }
+
+  Connector.prototype.queueLoad = function queueLoad(languages, namespaces, callback) {
+    var _this2 = this;
+
+    // find what needs to be loaded
+    var toLoad = [],
+        pending = [],
+        toLoadLanguages = [],
+        toLoadNamespaces = [];
+
+    languages.forEach(function (lng) {
+      var hasAllNamespaces = true;
+
+      namespaces.forEach(function (ns) {
+        var name = lng + '|' + ns;
+
+        if (_this2.store.hasResourceBundle(lng, ns)) {
+          _this2.state[name] = 2; // loaded
+        } else if (_this2.state[name] < 0) {
+          // nothing to do for err
+        } else if (_this2.state[name] === 1) {
+          if (pending.indexOf(name) < 0) pending.push(name);
+        } else {
+          _this2.state[name] = 1; // pending
+
+          hasAllNamespaces = false;
+
+          if (pending.indexOf(name) < 0) pending.push(name);
+          if (toLoad.indexOf(name) < 0) toLoad.push(name);
+          if (toLoadNamespaces.indexOf(ns) < 0) toLoadNamespaces.push(ns);
+        }
+      });
+
+      if (!hasAllNamespaces) toLoadLanguages.push(lng);
+    });
+
+    if (toLoad.length || pending.length) {
+      this.queue.push({
+        pending: pending,
+        loaded: {},
+        errors: [],
+        callback: callback
+      });
+    }
+
+    return {
+      toLoad: toLoad,
+      pending: pending,
+      toLoadLanguages: toLoadLanguages,
+      toLoadNamespaces: toLoadNamespaces
+    };
+  };
+
+  Connector.prototype.loaded = function loaded(name, err, data) {
+    var _this3 = this;
+
+    var _name$split = name.split('|'),
+        _name$split2 = slicedToArray(_name$split, 2),
+        lng = _name$split2[0],
+        ns = _name$split2[1];
+
+    if (err) this.emit('failedLoading', lng, ns, err);
+
+    if (data) {
+      this.store.addResourceBundle(lng, ns, data);
+    }
+
+    // set loaded
+    this.state[name] = err ? -1 : 2;
+    // callback if ready
+    this.queue.forEach(function (q) {
+      pushPath(q.loaded, [lng], ns);
+      remove(q.pending, name);
+
+      if (err) q.errors.push(err);
+
+      if (q.pending.length === 0 && !q.done) {
+        _this3.emit('loaded', q.loaded);
+        q.errors.length ? q.callback(q.errors) : q.callback();
+        q.done = true;
+      }
+    });
+
+    // remove done load requests
+    this.queue = this.queue.filter(function (q) {
+      return !q.done;
+    });
+  };
+
+  Connector.prototype.read = function read(lng, ns, fcName, tried, wait, callback) {
+    var _this4 = this;
+
+    if (!tried) tried = 0;
+    if (!wait) wait = 250;
+
+    if (!lng.length) return callback(null, {}); // noting to load
+
+    this.backend[fcName](lng, ns, function (err, data) {
+      if (err && data /* = retryFlag */ && tried < 5) {
+        setTimeout(function () {
+          _this4.read.call(_this4, lng, ns, fcName, ++tried, wait * 2, callback);
+        }, wait);
+        return;
+      }
+      callback(err, data);
+    });
+  };
+
+  Connector.prototype.load = function load(languages, namespaces, callback) {
+    var _this5 = this;
+
+    if (!this.backend) {
+      this.logger.warn('No backend was added via i18next.use. Will not load resources.');
+      return callback && callback();
+    }
+    var options = _extends({}, this.backend.options, this.options.backend);
+
+    if (typeof languages === 'string') languages = this.services.languageUtils.toResolveHierarchy(languages);
+    if (typeof namespaces === 'string') namespaces = [namespaces];
+
+    var toLoad = this.queueLoad(languages, namespaces, callback);
+    if (!toLoad.toLoad.length) {
+      if (!toLoad.pending.length) callback(); // nothing to load and no pendings...callback now
+      return; // pendings will trigger callback
+    }
+
+    // load with multi-load
+    if (options.allowMultiLoading && this.backend.readMulti) {
+      this.read(toLoad.toLoadLanguages, toLoad.toLoadNamespaces, 'readMulti', null, null, function (err, data) {
+        if (err) _this5.logger.warn('loading namespaces ' + toLoad.toLoadNamespaces.join(', ') + ' for languages ' + toLoad.toLoadLanguages.join(', ') + ' via multiloading failed', err);
+        if (!err && data) _this5.logger.log('loaded namespaces ' + toLoad.toLoadNamespaces.join(', ') + ' for languages ' + toLoad.toLoadLanguages.join(', ') + ' via multiloading', data);
+
+        toLoad.toLoad.forEach(function (name) {
+          var _name$split3 = name.split('|'),
+              _name$split4 = slicedToArray(_name$split3, 2),
+              l = _name$split4[0],
+              n = _name$split4[1];
+
+          var bundle = getPath(data, [l, n]);
+          if (bundle) {
+            _this5.loaded(name, err, bundle);
+          } else {
+            var _err = 'loading namespace ' + n + ' for language ' + l + ' via multiloading failed';
+            _this5.loaded(name, _err);
+            _this5.logger.error(_err);
+          }
+        });
+      });
+    }
+
+    // load one by one
+    else {
+        var readOne = function readOne(name) {
+          var _this6 = this;
+
+          var _name$split5 = name.split('|'),
+              _name$split6 = slicedToArray(_name$split5, 2),
+              lng = _name$split6[0],
+              ns = _name$split6[1];
+
+          this.read(lng, ns, 'read', null, null, function (err, data) {
+            if (err) _this6.logger.warn('loading namespace ' + ns + ' for language ' + lng + ' failed', err);
+            if (!err && data) _this6.logger.log('loaded namespace ' + ns + ' for language ' + lng, data);
+
+            _this6.loaded(name, err, data);
+          });
+        };
+
+        
+
+        toLoad.toLoad.forEach(function (name) {
+          readOne.call(_this5, name);
+        });
+      }
+  };
+
+  Connector.prototype.reload = function reload(languages, namespaces) {
+    var _this7 = this;
+
+    if (!this.backend) {
+      this.logger.warn('No backend was added via i18next.use. Will not load resources.');
+    }
+    var options = _extends({}, this.backend.options, this.options.backend);
+
+    if (typeof languages === 'string') languages = this.services.languageUtils.toResolveHierarchy(languages);
+    if (typeof namespaces === 'string') namespaces = [namespaces];
+
+    // load with multi-load
+    if (options.allowMultiLoading && this.backend.readMulti) {
+      this.read(languages, namespaces, 'readMulti', null, null, function (err, data) {
+        if (err) _this7.logger.warn('reloading namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading failed', err);
+        if (!err && data) _this7.logger.log('reloaded namespaces ' + namespaces.join(', ') + ' for languages ' + languages.join(', ') + ' via multiloading', data);
+
+        languages.forEach(function (l) {
+          namespaces.forEach(function (n) {
+            var bundle = getPath(data, [l, n]);
+            if (bundle) {
+              _this7.loaded(l + '|' + n, err, bundle);
+            } else {
+              var _err2 = 'reloading namespace ' + n + ' for language ' + l + ' via multiloading failed';
+              _this7.loaded(l + '|' + n, _err2);
+              _this7.logger.error(_err2);
+            }
+          });
+        });
+      });
+    }
+
+    // load one by one
+    else {
+        var readOne = function readOne(name) {
+          var _this8 = this;
+
+          var _name$split7 = name.split('|'),
+              _name$split8 = slicedToArray(_name$split7, 2),
+              lng = _name$split8[0],
+              ns = _name$split8[1];
+
+          this.read(lng, ns, 'read', null, null, function (err, data) {
+            if (err) _this8.logger.warn('reloading namespace ' + ns + ' for language ' + lng + ' failed', err);
+            if (!err && data) _this8.logger.log('reloaded namespace ' + ns + ' for language ' + lng, data);
+
+            _this8.loaded(name, err, data);
+          });
+        };
+
+        
+
+        languages.forEach(function (l) {
+          namespaces.forEach(function (n) {
+            readOne.call(_this7, l + '|' + n);
+          });
+        });
+      }
+  };
+
+  Connector.prototype.saveMissing = function saveMissing(languages, namespace, key, fallbackValue) {
+    if (this.backend && this.backend.create) this.backend.create(languages, namespace, key, fallbackValue);
+
+    // write to store to avoid resending
+    if (!languages || !languages[0]) return;
+    this.store.addResource(languages[0], namespace, key, fallbackValue);
+  };
+
+  return Connector;
+}(EventEmitter);
+
+var Connector$1 = function (_EventEmitter) {
+  inherits(Connector, _EventEmitter);
+
+  function Connector(cache, store, services) {
+    var options = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+    classCallCheck(this, Connector);
+
+    var _this = possibleConstructorReturn(this, _EventEmitter.call(this));
+
+    _this.cache = cache;
+    _this.store = store;
+    _this.services = services;
+    _this.options = options;
+    _this.logger = baseLogger.create('cacheConnector');
+
+    _this.cache && _this.cache.init && _this.cache.init(services, options.cache, options);
+    return _this;
+  }
+
+  Connector.prototype.load = function load(languages, namespaces, callback) {
+    var _this2 = this;
+
+    if (!this.cache) return callback && callback();
+    var options = _extends({}, this.cache.options, this.options.cache);
+
+    if (typeof languages === 'string') languages = this.services.languageUtils.toResolveHierarchy(languages);
+    if (typeof namespaces === 'string') namespaces = [namespaces];
+
+    if (options.enabled) {
+      this.cache.load(languages, function (err, data) {
+        if (err) _this2.logger.error('loading languages ' + languages.join(', ') + ' from cache failed', err);
+        if (data) {
+          for (var l in data) {
+            for (var n in data[l]) {
+              if (n === 'i18nStamp') continue;
+              var bundle = data[l][n];
+              if (bundle) _this2.store.addResourceBundle(l, n, bundle);
+            }
+          }
+        }
+        if (callback) callback();
+      });
+    } else {
+      if (callback) callback();
+    }
+  };
+
+  Connector.prototype.save = function save() {
+    if (this.cache && this.options.cache && this.options.cache.enabled) this.cache.save(this.store.data);
+  };
+
+  return Connector;
+}(EventEmitter);
+
+function get$1() {
+  return {
+    debug: false,
+    initImmediate: true,
+
+    ns: ['translation'],
+    defaultNS: ['translation'],
+    fallbackLng: ['dev'],
+    fallbackNS: false, // string or array of namespaces
+
+    whitelist: false, // array with whitelisted languages
+    nonExplicitWhitelist: false,
+    load: 'all', // | currentOnly | languageOnly
+    preload: false, // array with preload languages
+
+    simplifyPluralSuffix: true,
+    keySeparator: '.',
+    nsSeparator: ':',
+    pluralSeparator: '_',
+    contextSeparator: '_',
+
+    saveMissing: false, // enable to send missing values
+    saveMissingTo: 'fallback', // 'current' || 'all'
+    missingKeyHandler: false, // function(lng, ns, key, fallbackValue) -> override if prefer on handling
+
+    postProcess: false, // string or array of postProcessor names
+    returnNull: true, // allows null value as valid translation
+    returnEmptyString: true, // allows empty string value as valid translation
+    returnObjects: false,
+    joinArrays: false, // or string to join array
+    returnedObjectHandler: function returnedObjectHandler() {}, // function(key, value, options) triggered if key returns object but returnObjects is set to false
+    parseMissingKeyHandler: false, // function(key) parsed a key that was not found in t() before returning
+    appendNamespaceToMissingKey: false,
+    appendNamespaceToCIMode: false,
+    overloadTranslationOptionHandler: function overloadTranslationOptionHandler(args) {
+      return { defaultValue: args[1] };
+    },
+
+    interpolation: {
+      escapeValue: true,
+      format: function format(value, _format, lng) {
+        return value;
+      },
+      prefix: '{{',
+      suffix: '}}',
+      formatSeparator: ',',
+      // prefixEscaped: '{{',
+      // suffixEscaped: '}}',
+      // unescapeSuffix: '',
+      unescapePrefix: '-',
+
+      nestingPrefix: '$t(',
+      nestingSuffix: ')',
+      // nestingPrefixEscaped: '$t(',
+      // nestingSuffixEscaped: ')',
+      defaultVariables: undefined // object that can have values to interpolate on - extends passed in interpolation data
+    }
+  };
+}
+
+function transformOptions(options) {
+  // create namespace object if namespace is passed in as string
+  if (typeof options.ns === 'string') options.ns = [options.ns];
+  if (typeof options.fallbackLng === 'string') options.fallbackLng = [options.fallbackLng];
+  if (typeof options.fallbackNS === 'string') options.fallbackNS = [options.fallbackNS];
+
+  // extend whitelist with cimode
+  if (options.whitelist && options.whitelist.indexOf('cimode') < 0) options.whitelist.push('cimode');
+
+  return options;
+}
+
+function noop() {}
+
+var I18n = function (_EventEmitter) {
+  inherits(I18n, _EventEmitter);
+
+  function I18n() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var callback = arguments[1];
+    classCallCheck(this, I18n);
+
+    var _this = possibleConstructorReturn(this, _EventEmitter.call(this));
+
+    _this.options = transformOptions(options);
+    _this.services = {};
+    _this.logger = baseLogger;
+    _this.modules = { external: [] };
+
+    if (callback && !_this.isInitialized && !options.isClone) {
+      var _ret;
+
+      // https://github.com/i18next/i18next/issues/879
+      if (!_this.options.initImmediate) return _ret = _this.init(options, callback), possibleConstructorReturn(_this, _ret);
+      setTimeout(function () {
+        _this.init(options, callback);
+      }, 0);
+    }
+    return _this;
+  }
+
+  I18n.prototype.init = function init(options, callback) {
+    var _this2 = this;
+
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
+    if (!options) options = {};
+
+    if (options.compatibilityAPI === 'v1') {
+      this.options = _extends({}, get$1(), transformOptions(convertAPIOptions(options)), {});
+    } else if (options.compatibilityJSON === 'v1') {
+      this.options = _extends({}, get$1(), transformOptions(convertJSONOptions(options)), {});
+    } else {
+      this.options = _extends({}, get$1(), this.options, transformOptions(options));
+    }
+    if (!callback) callback = noop;
+
+    function createClassOnDemand(ClassOrObject) {
+      if (!ClassOrObject) return;
+      if (typeof ClassOrObject === 'function') return new ClassOrObject();
+      return ClassOrObject;
+    }
+
+    // init services
+    if (!this.options.isClone) {
+      if (this.modules.logger) {
+        baseLogger.init(createClassOnDemand(this.modules.logger), this.options);
+      } else {
+        baseLogger.init(null, this.options);
+      }
+
+      var lu = new LanguageUtil(this.options);
+      this.store = new ResourceStore(this.options.resources, this.options);
+
+      var s = this.services;
+      s.logger = baseLogger;
+      s.resourceStore = this.store;
+      s.resourceStore.on('added removed', function (lng, ns) {
+        s.cacheConnector.save();
+      });
+      s.languageUtils = lu;
+      s.pluralResolver = new PluralResolver(lu, { prepend: this.options.pluralSeparator, compatibilityJSON: this.options.compatibilityJSON, simplifyPluralSuffix: this.options.simplifyPluralSuffix });
+      s.interpolator = new Interpolator(this.options);
+
+      s.backendConnector = new Connector(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
+      // pipe events from backendConnector
+      s.backendConnector.on('*', function (event) {
+        for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+          args[_key - 1] = arguments[_key];
+        }
+
+        _this2.emit.apply(_this2, [event].concat(args));
+      });
+
+      s.backendConnector.on('loaded', function (loaded) {
+        s.cacheConnector.save();
+      });
+
+      s.cacheConnector = new Connector$1(createClassOnDemand(this.modules.cache), s.resourceStore, s, this.options);
+      // pipe events from backendConnector
+      s.cacheConnector.on('*', function (event) {
+        for (var _len2 = arguments.length, args = Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
+          args[_key2 - 1] = arguments[_key2];
+        }
+
+        _this2.emit.apply(_this2, [event].concat(args));
+      });
+
+      if (this.modules.languageDetector) {
+        s.languageDetector = createClassOnDemand(this.modules.languageDetector);
+        s.languageDetector.init(s, this.options.detection, this.options);
+      }
+
+      this.translator = new Translator(this.services, this.options);
+      // pipe events from translator
+      this.translator.on('*', function (event) {
+        for (var _len3 = arguments.length, args = Array(_len3 > 1 ? _len3 - 1 : 0), _key3 = 1; _key3 < _len3; _key3++) {
+          args[_key3 - 1] = arguments[_key3];
+        }
+
+        _this2.emit.apply(_this2, [event].concat(args));
+      });
+
+      this.modules.external.forEach(function (m) {
+        if (m.init) m.init(_this2);
+      });
+    }
+
+    // append api
+    var storeApi = ['getResource', 'addResource', 'addResources', 'addResourceBundle', 'removeResourceBundle', 'hasResourceBundle', 'getResourceBundle'];
+    storeApi.forEach(function (fcName) {
+      _this2[fcName] = function () {
+        return this.store[fcName].apply(this.store, arguments);
+      };
+    });
+
+    // TODO: COMPATIBILITY remove this
+    if (this.options.compatibilityAPI === 'v1') appendBackwardsAPI(this);
+
+    var load = function load() {
+      _this2.changeLanguage(_this2.options.lng, function (err, t) {
+        _this2.isInitialized = true;
+        _this2.logger.log('initialized', _this2.options);
+        _this2.emit('initialized', _this2.options);
+
+        callback(err, t);
+      });
+    };
+
+    if (this.options.resources || !this.options.initImmediate) {
+      load();
+    } else {
+      setTimeout(load, 0);
+    }
+
+    return this;
+  };
+
+  I18n.prototype.loadResources = function loadResources() {
+    var _this3 = this;
+
+    var callback = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : noop;
+
+    if (!this.options.resources) {
+      if (this.language && this.language.toLowerCase() === 'cimode') return callback(); // avoid loading resources for cimode
+
+      var toLoad = [];
+
+      var append = function append(lng) {
+        if (!lng) return;
+        var lngs = _this3.services.languageUtils.toResolveHierarchy(lng);
+        lngs.forEach(function (l) {
+          if (toLoad.indexOf(l) < 0) toLoad.push(l);
+        });
+      };
+
+      if (!this.language) {
+        // at least load fallbacks in this case
+        var fallbacks = this.services.languageUtils.getFallbackCodes(this.options.fallbackLng);
+        fallbacks.forEach(function (l) {
+          return append(l);
+        });
+      } else {
+        append(this.language);
+      }
+
+      if (this.options.preload) {
+        this.options.preload.forEach(function (l) {
+          return append(l);
+        });
+      }
+
+      this.services.cacheConnector.load(toLoad, this.options.ns, function () {
+        _this3.services.backendConnector.load(toLoad, _this3.options.ns, callback);
+      });
+    } else {
+      callback(null);
+    }
+  };
+
+  I18n.prototype.reloadResources = function reloadResources(lngs, ns) {
+    if (!lngs) lngs = this.languages;
+    if (!ns) ns = this.options.ns;
+    this.services.backendConnector.reload(lngs, ns);
+  };
+
+  I18n.prototype.use = function use(module) {
+    if (module.type === 'backend') {
+      this.modules.backend = module;
+    }
+
+    if (module.type === 'cache') {
+      this.modules.cache = module;
+    }
+
+    if (module.type === 'logger' || module.log && module.warn && module.error) {
+      this.modules.logger = module;
+    }
+
+    if (module.type === 'languageDetector') {
+      this.modules.languageDetector = module;
+    }
+
+    if (module.type === 'postProcessor') {
+      postProcessor.addPostProcessor(module);
+    }
+
+    if (module.type === '3rdParty') {
+      this.modules.external.push(module);
+    }
+
+    return this;
+  };
+
+  I18n.prototype.changeLanguage = function changeLanguage(lng, callback) {
+    var _this4 = this;
+
+    var done = function done(err) {
+      if (lng) {
+        _this4.emit('languageChanged', lng);
+        _this4.logger.log('languageChanged', lng);
+      }
+
+      if (callback) callback(err, function () {
+        for (var _len4 = arguments.length, args = Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
+          args[_key4] = arguments[_key4];
+        }
+
+        return _this4.t.apply(_this4, args);
+      });
+    };
+
+    var setLng = function setLng(l) {
+      if (l) {
+        _this4.language = l;
+        _this4.languages = _this4.services.languageUtils.toResolveHierarchy(l);
+
+        _this4.translator.changeLanguage(l);
+
+        if (_this4.services.languageDetector) _this4.services.languageDetector.cacheUserLanguage(l);
+      }
+
+      _this4.loadResources(function (err) {
+        done(err);
+      });
+    };
+
+    if (!lng && this.services.languageDetector && !this.services.languageDetector.async) {
+      setLng(this.services.languageDetector.detect());
+    } else if (!lng && this.services.languageDetector && this.services.languageDetector.async) {
+      this.services.languageDetector.detect(setLng);
+    } else {
+      setLng(lng);
+    }
+  };
+
+  I18n.prototype.getFixedT = function getFixedT(lng, ns) {
+    var _this5 = this;
+
+    var fixedT = function fixedT(key) {
+      var opts = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      var options = _extends({}, opts);
+      options.lng = options.lng || fixedT.lng;
+      options.ns = options.ns || fixedT.ns;
+      return _this5.t(key, options);
+    };
+    fixedT.lng = lng;
+    fixedT.ns = ns;
+    return fixedT;
+  };
+
+  I18n.prototype.t = function t() {
+    return this.translator && this.translator.translate.apply(this.translator, arguments);
+  };
+
+  I18n.prototype.exists = function exists() {
+    return this.translator && this.translator.exists.apply(this.translator, arguments);
+  };
+
+  I18n.prototype.setDefaultNamespace = function setDefaultNamespace(ns) {
+    this.options.defaultNS = ns;
+  };
+
+  I18n.prototype.loadNamespaces = function loadNamespaces(ns, callback) {
+    var _this6 = this;
+
+    if (!this.options.ns) return callback && callback();
+    if (typeof ns === 'string') ns = [ns];
+
+    ns.forEach(function (n) {
+      if (_this6.options.ns.indexOf(n) < 0) _this6.options.ns.push(n);
+    });
+
+    this.loadResources(callback);
+  };
+
+  I18n.prototype.loadLanguages = function loadLanguages(lngs, callback) {
+    if (typeof lngs === 'string') lngs = [lngs];
+    var preloaded = this.options.preload || [];
+
+    var newLngs = lngs.filter(function (lng) {
+      return preloaded.indexOf(lng) < 0;
+    });
+    // Exit early if all given languages are already preloaded
+    if (!newLngs.length) return callback();
+
+    this.options.preload = preloaded.concat(newLngs);
+    this.loadResources(callback);
+  };
+
+  I18n.prototype.dir = function dir(lng) {
+    if (!lng) lng = this.language;
+    if (!lng) return 'rtl';
+
+    var rtlLngs = ['ar', 'shu', 'sqr', 'ssh', 'xaa', 'yhd', 'yud', 'aao', 'abh', 'abv', 'acm', 'acq', 'acw', 'acx', 'acy', 'adf', 'ads', 'aeb', 'aec', 'afb', 'ajp', 'apc', 'apd', 'arb', 'arq', 'ars', 'ary', 'arz', 'auz', 'avl', 'ayh', 'ayl', 'ayn', 'ayp', 'bbz', 'pga', 'he', 'iw', 'ps', 'pbt', 'pbu', 'pst', 'prp', 'prd', 'ur', 'ydd', 'yds', 'yih', 'ji', 'yi', 'hbo', 'men', 'xmn', 'fa', 'jpr', 'peo', 'pes', 'prs', 'dv', 'sam'];
+
+    return rtlLngs.indexOf(this.services.languageUtils.getLanguagePartFromCode(lng)) >= 0 ? 'rtl' : 'ltr';
+  };
+
+  I18n.prototype.createInstance = function createInstance() {
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var callback = arguments[1];
+
+    return new I18n(options, callback);
+  };
+
+  I18n.prototype.cloneInstance = function cloneInstance() {
+    var _this7 = this;
+
+    var options = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : noop;
+
+    var mergedOptions = _extends({}, options, this.options, { isClone: true });
+    var clone = new I18n(mergedOptions, callback);
+    var membersToCopy = ['store', 'services', 'language'];
+    membersToCopy.forEach(function (m) {
+      clone[m] = _this7[m];
+    });
+    clone.translator = new Translator(clone.services, clone.options);
+    clone.translator.on('*', function (event) {
+      for (var _len5 = arguments.length, args = Array(_len5 > 1 ? _len5 - 1 : 0), _key5 = 1; _key5 < _len5; _key5++) {
+        args[_key5 - 1] = arguments[_key5];
+      }
+
+      clone.emit.apply(clone, [event].concat(args));
+    });
+    clone.init(mergedOptions, callback);
+
+    return clone;
+  };
+
+  return I18n;
+}(EventEmitter);
+
+var i18next = new I18n();
+
+return i18next;
+
+})));
+;define('i18next', ['i18next/i18next'], function (main) { return main; });
+
+define('aurelia-i18n/aurelia-i18n',['exports', 'aurelia-logging', 'aurelia-event-aggregator', 'aurelia-templating', 'aurelia-loader', 'aurelia-templating-resources', 'aurelia-pal', './i18n', './relativeTime', './df', './nf', './rt', './t', './base-i18n', './aurelia-i18n-loader'], function (exports, _aureliaLogging, _aureliaEventAggregator, _aureliaTemplating, _aureliaLoader, _aureliaTemplatingResources, _aureliaPal, _i18n, _relativeTime, _df, _nf, _rt, _t, _baseI18n, _aureliaI18nLoader) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.Backend = exports.EventAggregator = exports.BaseI18N = exports.TParamsCustomAttribute = exports.TCustomAttribute = exports.TBindingBehavior = exports.TValueConverter = exports.RtBindingBehavior = exports.RtValueConverter = exports.NfBindingBehavior = exports.NfValueConverter = exports.DfBindingBehavior = exports.DfValueConverter = exports.RelativeTime = exports.I18N = exports.configure = undefined;
+
+  var LogManager = _interopRequireWildcard(_aureliaLogging);
+
+  function _interopRequireWildcard(obj) {
+    if (obj && obj.__esModule) {
+      return obj;
+    } else {
+      var newObj = {};
+
+      if (obj != null) {
+        for (var key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+        }
+      }
+
+      newObj.default = obj;
+      return newObj;
+    }
+  }
+
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+  };
+
+  function registerI18N(frameworkConfig, cb) {
+    var instance = new _i18n.I18N(frameworkConfig.container.get(_aureliaEventAggregator.EventAggregator), frameworkConfig.container.get(_aureliaTemplatingResources.BindingSignaler));
+    frameworkConfig.container.registerInstance(_i18n.I18N, instance);
+
+    var ret = cb(instance);
+
+    frameworkConfig.postTask(function () {
+      var resources = frameworkConfig.container.get(_aureliaTemplating.ViewResources);
+      var htmlBehaviorResource = resources.getAttribute('t');
+      var htmlParamsResource = resources.getAttribute('t-params');
+      var attributes = instance.i18next.options.attributes;
+
+      if (!attributes) {
+        attributes = ['t', 'i18n'];
+      }
+
+      attributes.forEach(function (alias) {
+        return resources.registerAttribute(alias, htmlBehaviorResource, 't');
+      });
+      attributes.forEach(function (alias) {
+        return resources.registerAttribute(alias + '-params', htmlParamsResource, 't-params');
+      });
+    });
+
+    return ret;
+  }
+
+  function configure(frameworkConfig, cb) {
+    if (cb === undefined || typeof cb !== 'function') {
+      var errorMsg = 'You need to provide a callback method to properly configure the library';
+      throw errorMsg;
+    }
+
+    frameworkConfig.globalResources(_aureliaPal.PLATFORM.moduleName('./t'));
+    frameworkConfig.globalResources(_aureliaPal.PLATFORM.moduleName('./nf'));
+    frameworkConfig.globalResources(_aureliaPal.PLATFORM.moduleName('./df'));
+    frameworkConfig.globalResources(_aureliaPal.PLATFORM.moduleName('./rt'));
+
+    if (window.Intl === undefined) {
+      var _ret = function () {
+        var i18nLogger = LogManager.getLogger('i18n');
+        i18nLogger.warn('Intl API is not available. Trying to load the polyfill.');
+        var loader = frameworkConfig.container.get(_aureliaLoader.Loader);
+        var normalizeErrorMessage = 'Failed to normalize {module} while loading the Intl polyfill.';
+
+        return {
+          v: loader.normalize('aurelia-i18n').then(function (i18nName) {
+            return loader.normalize('intl', i18nName).then(function (intlName) {
+              return loader.loadModule(intlName).then(function (poly) {
+                window.Intl = poly;
+                return registerI18N(frameworkConfig, cb);
+              }, function () {
+                return i18nLogger.warn('Failed to load the Intl polyfill.');
+              });
+            }, function () {
+              return i18nLogger.warn(normalizeErrorMessage.replace('{module}', 'intl'));
+            });
+          }, function () {
+            return i18nLogger.warn(normalizeErrorMessage.replace('{module}', 'aurelia-i18n'));
+          })
+        };
+      }();
+
+      if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
+    }
+
+    return Promise.resolve(registerI18N(frameworkConfig, cb));
+  }
+
+  exports.configure = configure;
+  exports.I18N = _i18n.I18N;
+  exports.RelativeTime = _relativeTime.RelativeTime;
+  exports.DfValueConverter = _df.DfValueConverter;
+  exports.DfBindingBehavior = _df.DfBindingBehavior;
+  exports.NfValueConverter = _nf.NfValueConverter;
+  exports.NfBindingBehavior = _nf.NfBindingBehavior;
+  exports.RtValueConverter = _rt.RtValueConverter;
+  exports.RtBindingBehavior = _rt.RtBindingBehavior;
+  exports.TValueConverter = _t.TValueConverter;
+  exports.TBindingBehavior = _t.TBindingBehavior;
+  exports.TCustomAttribute = _t.TCustomAttribute;
+  exports.TParamsCustomAttribute = _t.TParamsCustomAttribute;
+  exports.BaseI18N = _baseI18n.BaseI18N;
+  exports.EventAggregator = _aureliaEventAggregator.EventAggregator;
+  exports.Backend = _aureliaI18nLoader.Backend;
+});;define('aurelia-i18n', ['aurelia-i18n/aurelia-i18n'], function (main) { return main; });
+
+define('aurelia-i18n/i18n',['exports', 'i18next', 'aurelia-pal', 'aurelia-event-aggregator', 'aurelia-templating-resources'], function (exports, _i18next, _aureliaPal, _aureliaEventAggregator, _aureliaTemplatingResources) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.I18N = undefined;
+
+  var _i18next2 = _interopRequireDefault(_i18next);
+
+  function _interopRequireDefault(obj) {
+    return obj && obj.__esModule ? obj : {
+      default: obj
+    };
+  }
+
+  
+
+  var _class, _temp;
+
+  var I18N = exports.I18N = (_temp = _class = function () {
+    function I18N(ea, signaler) {
+      var _this = this;
+
+      
+
+      this.globalVars = {};
+      this.params = {};
+      this.i18nextDefered = {
+        resolve: null,
+        promise: null
+      };
+
+      this.i18next = _i18next2.default;
+      this.ea = ea;
+      this.Intl = window.Intl;
+      this.signaler = signaler;
+      this.i18nextDefered.promise = new Promise(function (resolve) {
+        return _this.i18nextDefered.resolve = resolve;
+      });
+    }
+
+    I18N.prototype.setup = function setup(options) {
+      var _this2 = this;
+
+      var defaultOptions = {
+        compatibilityAPI: 'v1',
+        compatibilityJSON: 'v1',
+        lng: 'en',
+        attributes: ['t', 'i18n'],
+        fallbackLng: 'en',
+        debug: false
+      };
+
+      _i18next2.default.init(options || defaultOptions, function (err, t) {
+        if (_i18next2.default.options.attributes instanceof String) {
+          _i18next2.default.options.attributes = [_i18next2.default.options.attributes];
+        }
+
+        _this2.i18nextDefered.resolve(_this2.i18next);
+      });
+
+      return this.i18nextDefered.promise;
+    };
+
+    I18N.prototype.i18nextReady = function i18nextReady() {
+      return this.i18nextDefered.promise;
+    };
+
+    I18N.prototype.setLocale = function setLocale(locale) {
+      var _this3 = this;
+
+      return new Promise(function (resolve) {
+        var oldLocale = _this3.getLocale();
+        _this3.i18next.changeLanguage(locale, function (err, tr) {
+          _this3.ea.publish('i18n:locale:changed', { oldValue: oldLocale, newValue: locale });
+          _this3.signaler.signal('aurelia-translation-signal');
+          resolve(tr);
+        });
+      });
+    };
+
+    I18N.prototype.getLocale = function getLocale() {
+      return this.i18next.language;
+    };
+
+    I18N.prototype.nf = function nf(options, locales) {
+      return new this.Intl.NumberFormat(locales || this.getLocale(), options || {});
+    };
+
+    I18N.prototype.uf = function uf(number, locale) {
+      var nf = this.nf({}, locale || this.getLocale());
+      var comparer = nf.format(10000 / 3);
+
+      var thousandSeparator = comparer[1];
+      var decimalSeparator = comparer[5];
+
+      var result = number.replace(thousandSeparator, '').replace(/[^\d.,-]/g, '').replace(decimalSeparator, '.');
+
+      return Number(result);
+    };
+
+    I18N.prototype.df = function df(options, locales) {
+      return new this.Intl.DateTimeFormat(locales || this.getLocale(), options);
+    };
+
+    I18N.prototype.tr = function tr(key, options) {
+      var fullOptions = this.globalVars;
+
+      if (options !== undefined) {
+        fullOptions = Object.assign(Object.assign({}, this.globalVars), options);
+      }
+
+      return this.i18next.t(key, fullOptions);
+    };
+
+    I18N.prototype.registerGlobalVariable = function registerGlobalVariable(key, value) {
+      this.globalVars[key] = value;
+    };
+
+    I18N.prototype.unregisterGlobalVariable = function unregisterGlobalVariable(key) {
+      delete this.globalVars[key];
+    };
+
+    I18N.prototype.updateTranslations = function updateTranslations(el) {
+      if (!el || !el.querySelectorAll) {
+        return;
+      }
+
+      var i = void 0;
+      var l = void 0;
+
+      var selector = [].concat(this.i18next.options.attributes);
+      for (i = 0, l = selector.length; i < l; i++) {
+        selector[i] = '[' + selector[i] + ']';
+      }selector = selector.join(',');
+
+      var nodes = el.querySelectorAll(selector);
+      for (i = 0, l = nodes.length; i < l; i++) {
+        var node = nodes[i];
+        var keys = void 0;
+
+        for (var i2 = 0, l2 = this.i18next.options.attributes.length; i2 < l2; i2++) {
+          keys = node.getAttribute(this.i18next.options.attributes[i2]);
+          if (keys) break;
+        }
+
+        if (!keys) continue;
+
+        this.updateValue(node, keys);
+      }
+    };
+
+    I18N.prototype.updateValue = function updateValue(node, value, params) {
+      if (value === null || value === undefined) {
+        return;
+      }
+
+      var keys = value.split(';');
+      var i = keys.length;
+
+      while (i--) {
+        var key = keys[i];
+
+        var re = /\[([a-z\-]*)\]/ig;
+
+        var m = void 0;
+        var attr = 'text';
+
+        if (node.nodeName === 'IMG') attr = 'src';
+
+        while ((m = re.exec(key)) !== null) {
+          if (m.index === re.lastIndex) {
+            re.lastIndex++;
+          }
+          if (m) {
+            key = key.replace(m[0], '');
+            attr = m[1];
+          }
+        }
+
+        if (!node._textContent) node._textContent = node.textContent;
+        if (!node._innerHTML) node._innerHTML = node.innerHTML;
+
+        var attrCC = attr.replace(/-([a-z])/g, function (g) {
+          return g[1].toUpperCase();
+        });
+
+        switch (attr) {
+          case 'text':
+            var newChild = _aureliaPal.DOM.createTextNode(this.tr(key, params));
+            if (node._newChild) {
+              node.removeChild(node._newChild);
+            }
+
+            node._newChild = newChild;
+            while (node.firstChild) {
+              node.removeChild(node.firstChild);
+            }
+            node.appendChild(node._newChild);
+            break;
+          case 'prepend':
+            var prependParser = _aureliaPal.DOM.createElement('div');
+            prependParser.innerHTML = this.tr(key, params);
+            for (var ni = node.childNodes.length - 1; ni >= 0; ni--) {
+              if (node.childNodes[ni]._prepended) {
+                node.removeChild(node.childNodes[ni]);
+              }
+            }
+
+            for (var pi = prependParser.childNodes.length - 1; pi >= 0; pi--) {
+              prependParser.childNodes[pi]._prepended = true;
+              if (node.firstChild) {
+                node.insertBefore(prependParser.childNodes[pi], node.firstChild);
+              } else {
+                node.appendChild(prependParser.childNodes[pi]);
+              }
+            }
+            break;
+          case 'append':
+            var appendParser = _aureliaPal.DOM.createElement('div');
+            appendParser.innerHTML = this.tr(key, params);
+            for (var _ni = node.childNodes.length - 1; _ni >= 0; _ni--) {
+              if (node.childNodes[_ni]._appended) {
+                node.removeChild(node.childNodes[_ni]);
+              }
+            }
+
+            while (appendParser.firstChild) {
+              appendParser.firstChild._appended = true;
+              node.appendChild(appendParser.firstChild);
+            }
+            break;
+          case 'html':
+            node.innerHTML = this.tr(key, params);
+            break;
+          default:
+            if (node.au && node.au.controller && node.au.controller.viewModel && attrCC in node.au.controller.viewModel) {
+              node.au.controller.viewModel[attrCC] = this.tr(key, params);
+            } else {
+              node.setAttribute(attr, this.tr(key, params));
+            }
+
+            break;
+        }
+      }
+    };
+
+    return I18N;
+  }(), _class.inject = [_aureliaEventAggregator.EventAggregator, _aureliaTemplatingResources.BindingSignaler], _temp);
+});
+define('aurelia-i18n/relativeTime',['exports', './i18n', './defaultTranslations/relative.time', 'aurelia-event-aggregator'], function (exports, _i18n, _relative, _aureliaEventAggregator) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.RelativeTime = undefined;
+
+  
+
+  var RelativeTime = exports.RelativeTime = function () {
+    RelativeTime.inject = function inject() {
+      return [_i18n.I18N, _aureliaEventAggregator.EventAggregator];
+    };
+
+    function RelativeTime(i18n, ea) {
+      var _this = this;
+
+      
+
+      this.service = i18n;
+      this.ea = ea;
+
+      this.service.i18nextReady().then(function () {
+        _this.setup();
+      });
+      this.ea.subscribe('i18n:locale:changed', function (locales) {
+        _this.setup(locales);
+      });
+    }
+
+    RelativeTime.prototype.setup = function setup(locales) {
+      var trans = _relative.translations.default || _relative.translations;
+      var key = locales && locales.newValue ? locales.newValue : this.service.getLocale();
+      var fallbackLng = this.service.i18next.fallbackLng;
+      var index = 0;
+
+      if ((index = key.indexOf('-')) >= 0) {
+        var baseLocale = key.substring(0, index);
+
+        if (trans[baseLocale]) {
+          this.addTranslationResource(baseLocale, trans[baseLocale].translation);
+        }
+      }
+
+      if (trans[key]) {
+        this.addTranslationResource(key, trans[key].translation);
+      }
+      if (trans[fallbackLng]) {
+        this.addTranslationResource(key, trans[fallbackLng].translation);
+      }
+    };
+
+    RelativeTime.prototype.addTranslationResource = function addTranslationResource(key, translation) {
+      var options = this.service.i18next.options;
+
+      if (options.interpolation && options.interpolation.prefix !== '__' || options.interpolation.suffix !== '__') {
+        for (var subkey in translation) {
+          translation[subkey] = translation[subkey].replace('__count__', (options.interpolation.prefix || '{{') + 'count' + (options.interpolation.suffix || '}}'));
+        }
+      }
+
+      this.service.i18next.addResources(key, options.defaultNS, translation);
+    };
+
+    RelativeTime.prototype.getRelativeTime = function getRelativeTime(time) {
+      var now = new Date();
+      var diff = now.getTime() - time.getTime();
+
+      var timeDiff = this.getTimeDiffDescription(diff, 'year', 31104000000);
+      if (!timeDiff) {
+        timeDiff = this.getTimeDiffDescription(diff, 'month', 2592000000);
+        if (!timeDiff) {
+          timeDiff = this.getTimeDiffDescription(diff, 'day', 86400000);
+          if (!timeDiff) {
+            timeDiff = this.getTimeDiffDescription(diff, 'hour', 3600000);
+            if (!timeDiff) {
+              timeDiff = this.getTimeDiffDescription(diff, 'minute', 60000);
+              if (!timeDiff) {
+                timeDiff = this.getTimeDiffDescription(diff, 'second', 1000);
+                if (!timeDiff) {
+                  timeDiff = this.service.tr('now');
+                }
+              }
+            }
+          }
+        }
+      }
+
+      return timeDiff;
+    };
+
+    RelativeTime.prototype.getTimeDiffDescription = function getTimeDiffDescription(diff, unit, timeDivisor) {
+      var unitAmount = (diff / timeDivisor).toFixed(0);
+      if (unitAmount > 0) {
+        return this.service.tr(unit, { count: parseInt(unitAmount, 10), context: 'ago' });
+      } else if (unitAmount < 0) {
+        var abs = Math.abs(unitAmount);
+        return this.service.tr(unit, { count: abs, context: 'in' });
+      }
+
+      return null;
+    };
+
+    return RelativeTime;
+  }();
+});
+define('aurelia-i18n/defaultTranslations/relative.time',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  var translations = exports.translations = {
+    ar: {
+      translation: {
+        'now': 'الآن',
+        'second_ago': 'منذ __count__ ثانية',
+        'second_ago_plural': 'منذ __count__ ثواني',
+        'second_in': 'في __count__ ثانية',
+        'second_in_plural': 'في __count__ ثواني',
+        'minute_ago': 'منذ __count__ دقيقة',
+        'minute_ago_plural': 'منذ __count__ دقائق',
+        'minute_in': 'في __count__ دقيقة',
+        'minute_in_plural': 'في __count__ دقائق',
+        'hour_ago': 'منذ __count__ ساعة',
+        'hour_ago_plural': 'منذ __count__ ساعات',
+        'hour_in': 'في __count__ ساعة',
+        'hour_in_plural': 'في __count__ ساعات',
+        'day_ago': 'منذ __count__ يوم',
+        'day_ago_plural': 'منذ __count__ أيام',
+        'day_in': 'في __count__ يوم',
+        'day_in_plural': 'في __count__ أيام'
+      }
+    },
+    en: {
+      translation: {
+        'now': 'just now',
+        'second_ago': '__count__ second ago',
+        'second_ago_plural': '__count__ seconds ago',
+        'second_in': 'in __count__ second',
+        'second_in_plural': 'in __count__ seconds',
+        'minute_ago': '__count__ minute ago',
+        'minute_ago_plural': '__count__ minutes ago',
+        'minute_in': 'in __count__ minute',
+        'minute_in_plural': 'in __count__ minutes',
+        'hour_ago': '__count__ hour ago',
+        'hour_ago_plural': '__count__ hours ago',
+        'hour_in': 'in __count__ hour',
+        'hour_in_plural': 'in __count__ hours',
+        'day_ago': '__count__ day ago',
+        'day_ago_plural': '__count__ days ago',
+        'day_in': 'in __count__ day',
+        'day_in_plural': 'in __count__ days',
+        'month_ago': '__count__ month ago',
+        'month_ago_plural': '__count__ months ago',
+        'month_in': 'in __count__ month',
+        'month_in_plural': 'in __count__ months',
+        'year_ago': '__count__ year ago',
+        'year_ago_plural': '__count__ years ago',
+        'year_in': 'in __count__ year',
+        'year_in_plural': 'in __count__ years'
+      }
+    },
+    it: {
+      translation: {
+        'now': 'adesso',
+        'second_ago': '__count__ secondo fa',
+        'second_ago_plural': '__count__ secondi fa',
+        'second_in': 'in __count__ secondo',
+        'second_in_plural': 'in __count__ secondi',
+        'minute_ago': '__count__ minuto fa',
+        'minute_ago_plural': '__count__ minuti fa',
+        'minute_in': 'in __count__ minuto',
+        'minute_in_plural': 'in __count__ minuti',
+        'hour_ago': '__count__ ora fa',
+        'hour_ago_plural': '__count__ ore fa',
+        'hour_in': 'in __count__ ora',
+        'hour_in_plural': 'in __count__ ore',
+        'day_ago': '__count__ giorno fa',
+        'day_ago_plural': '__count__ giorni fa',
+        'day_in': 'in __count__ giorno',
+        'day_in_plural': 'in __count__ giorni',
+        'month_ago': '__count__ mese fa',
+        'month_ago_plural': '__count__ mesi fa',
+        'month_in': 'in __count__ mese',
+        'month_in_plural': 'in __count__ mesi',
+        'year_ago': '__count__ anno fa',
+        'year_ago_plural': '__count__ anni fa',
+        'year_in': 'in __count__ anno',
+        'year_in_plural': 'in __count__ anni'
+      }
+    },
+    de: {
+      translation: {
+        'now': 'jetzt gerade',
+        'second_ago': 'vor __count__ Sekunde',
+        'second_ago_plural': 'vor __count__ Sekunden',
+        'second_in': 'in __count__ Sekunde',
+        'second_in_plural': 'in __count__ Sekunden',
+        'minute_ago': 'vor __count__ Minute',
+        'minute_ago_plural': 'vor __count__ Minuten',
+        'minute_in': 'in __count__ Minute',
+        'minute_in_plural': 'in __count__ Minuten',
+        'hour_ago': 'vor __count__ Stunde',
+        'hour_ago_plural': 'vor __count__ Stunden',
+        'hour_in': 'in __count__ Stunde',
+        'hour_in_plural': 'in __count__ Stunden',
+        'day_ago': 'vor __count__ Tag',
+        'day_ago_plural': 'vor __count__ Tagen',
+        'day_in': 'in __count__ Tag',
+        'day_in_plural': 'in __count__ Tagen',
+        'month_ago': 'vor __count__ Monat',
+        'month_ago_plural': 'vor __count__ Monaten',
+        'month_in': 'in __count__ Monat',
+        'month_in_plural': 'in __count__ Monaten',
+        'year_ago': 'vor __count__ Jahr',
+        'year_ago_plural': 'vor __count__ Jahren',
+        'year_in': 'in __count__ Jahr',
+        'year_in_plural': 'in __count__ Jahren'
+      }
+    },
+    nl: {
+      translation: {
+        'now': 'zonet',
+        'second_ago': '__count__ seconde geleden',
+        'second_ago_plural': '__count__ seconden geleden',
+        'second_in': 'in __count__ seconde',
+        'second_in_plural': 'in __count__ seconden',
+        'minute_ago': '__count__ minuut geleden',
+        'minute_ago_plural': '__count__ minuten geleden',
+        'minute_in': 'in __count__ minuut',
+        'minute_in_plural': 'in __count__ minuten',
+        'hour_ago': '__count__ uur geleden',
+        'hour_ago_plural': '__count__ uren geleden',
+        'hour_in': 'in __count__ uur',
+        'hour_in_plural': 'in __count__ uren',
+        'day_ago': '__count__ dag geleden',
+        'day_ago_plural': '__count__ dagen geleden',
+        'day_in': 'in __count__ dag',
+        'day_in_plural': 'in __count__ dagen',
+        'month_ago': '__count__ maand geleden',
+        'month_ago_plural': '__count__ maanden geleden',
+        'month_in': 'in __count__ maand',
+        'month_in_plural': 'in __count__ maanden',
+        'year_ago': '__count__ jaar geleden',
+        'year_ago_plural': '__count__ jaren geleden',
+        'year_in': 'in __count__ jaar',
+        'year_in_plural': 'in __count__ jaren'
+      }
+    },
+    fr: {
+      translation: {
+        'now': 'maintenant',
+        'second_ago': '__count__ seconde plus tôt',
+        'second_ago_plural': '__count__ secondes plus tôt',
+        'second_in': 'en __count__ seconde',
+        'second_in_plural': 'en __count__ secondes',
+        'minute_ago': '__count__ minute plus tôt',
+        'minute_ago_plural': '__count__ minutes plus tôt',
+        'minute_in': 'en __count__ minute',
+        'minute_in_plural': 'en __count__ minutes',
+        'hour_ago': '__count__ heure plus tôt',
+        'hour_ago_plural': '__count__ heures plus tôt',
+        'hour_in': 'en __count__ heure',
+        'hour_in_plural': 'en __count__ heures',
+        'day_ago': '__count__ jour plus tôt',
+        'day_ago_plural': '__count__ jours plus tôt',
+        'day_in': 'en __count__ jour',
+        'day_in_plural': 'en __count__ jours'
+      }
+    },
+    th: {
+      translation: {
+        'now': 'เมื่อกี้',
+        'second_ago': '__count__ วินาที ที่ผ่านมา',
+        'second_ago_plural': '__count__ วินาที ที่ผ่านมา',
+        'second_in': 'อีก __count__ วินาที',
+        'second_in_plural': 'อีก __count__ วินาที',
+        'minute_ago': '__count__ นาที ที่ผ่านมา',
+        'minute_ago_plural': '__count__ นาที ที่ผ่านมา',
+        'minute_in': 'อีก __count__ นาที',
+        'minute_in_plural': 'อีก __count__ นาที',
+        'hour_ago': '__count__ ชั่วโมง ที่ผ่านมา',
+        'hour_ago_plural': '__count__ ชั่วโมง ที่ผ่านมา',
+        'hour_in': 'อีก __count__ ชั่วโมง',
+        'hour_in_plural': 'อีก __count__ ชั่วโมง',
+        'day_ago': '__count__ วัน ที่ผ่านมา',
+        'day_ago_plural': '__count__ วัน ที่ผ่านมา',
+        'day_in': 'อีก __count__ วัน',
+        'day_in_plural': 'อีก __count__ วัน'
+      }
+    },
+    sv: {
+      translation: {
+        'now': 'just nu',
+        'second_ago': '__count__ sekund sedan',
+        'second_ago_plural': '__count__ sekunder sedan',
+        'second_in': 'om __count__ sekund',
+        'second_in_plural': 'om __count__ sekunder',
+        'minute_ago': '__count__ minut sedan',
+        'minute_ago_plural': '__count__ minuter sedan',
+        'minute_in': 'om __count__ minut',
+        'minute_in_plural': 'om __count__ minuter',
+        'hour_ago': '__count__ timme sedan',
+        'hour_ago_plural': '__count__ timmar sedan',
+        'hour_in': 'om __count__ timme',
+        'hour_in_plural': 'om __count__ timmar',
+        'day_ago': '__count__ dag sedan',
+        'day_ago_plural': '__count__ dagar sedan',
+        'day_in': 'om __count__ dag',
+        'day_in_plural': 'om __count__ dagar'
+      }
+    },
+    da: {
+      translation: {
+        'now': 'lige nu',
+        'second_ago': '__count__ sekunder siden',
+        'second_ago_plural': '__count__ sekunder siden',
+        'second_in': 'om __count__ sekund',
+        'second_in_plural': 'om __count__ sekunder',
+        'minute_ago': '__count__ minut siden',
+        'minute_ago_plural': '__count__ minutter siden',
+        'minute_in': 'om __count__ minut',
+        'minute_in_plural': 'om __count__ minutter',
+        'hour_ago': '__count__ time siden',
+        'hour_ago_plural': '__count__ timer siden',
+        'hour_in': 'om __count__ time',
+        'hour_in_plural': 'om __count__ timer',
+        'day_ago': '__count__ dag siden',
+        'day_ago_plural': '__count__ dage siden',
+        'day_in': 'om __count__ dag',
+        'day_in_plural': 'om __count__ dage'
+      }
+    },
+    no: {
+      translation: {
+        'now': 'akkurat nå',
+        'second_ago': '__count__ sekund siden',
+        'second_ago_plural': '__count__ sekunder siden',
+        'second_in': 'om __count__ sekund',
+        'second_in_plural': 'om __count__ sekunder',
+        'minute_ago': '__count__ minutt siden',
+        'minute_ago_plural': '__count__ minutter siden',
+        'minute_in': 'om __count__ minutt',
+        'minute_in_plural': 'om __count__ minutter',
+        'hour_ago': '__count__ time siden',
+        'hour_ago_plural': '__count__ timer siden',
+        'hour_in': 'om __count__ time',
+        'hour_in_plural': 'om __count__ timer',
+        'day_ago': '__count__ dag siden',
+        'day_ago_plural': '__count__ dager siden',
+        'day_in': 'om __count__ dag',
+        'day_in_plural': 'om __count__ dager'
+      }
+    },
+    jp: {
+      translation: {
+        'now': 'たった今',
+        'second_ago': '__count__ 秒前',
+        'second_ago_plural': '__count__ 秒前',
+        'second_in': 'あと __count__ 秒',
+        'second_in_plural': 'あと __count__ 秒',
+        'minute_ago': '__count__ 分前',
+        'minute_ago_plural': '__count__ 分前',
+        'minute_in': 'あと __count__ 分',
+        'minute_in_plural': 'あと __count__ 分',
+        'hour_ago': '__count__ 時間前',
+        'hour_ago_plural': '__count__ 時間前',
+        'hour_in': 'あと __count__ 時間',
+        'hour_in_plural': 'あと __count__ 時間',
+        'day_ago': '__count__ 日間前',
+        'day_ago_plural': '__count__ 日間前',
+        'day_in': 'あと __count__ 日間',
+        'day_in_plural': 'あと __count__ 日間'
+      }
+    },
+    pt: {
+      translation: {
+        'now': 'neste exato momento',
+        'second_ago': '__count__ segundo atrás',
+        'second_ago_plural': '__count__ segundos atrás',
+        'second_in': 'em __count__ segundo',
+        'second_in_plural': 'em __count__ segundos',
+        'minute_ago': '__count__ minuto atrás',
+        'minute_ago_plural': '__count__ minutos atrás',
+        'minute_in': 'em __count__ minuto',
+        'minute_in_plural': 'em __count__ minutos',
+        'hour_ago': '__count__ hora atrás',
+        'hour_ago_plural': '__count__ horas atrás',
+        'hour_in': 'em __count__ hora',
+        'hour_in_plural': 'em __count__ horas',
+        'day_ago': '__count__ dia atrás',
+        'day_ago_plural': '__count__ dias atrás',
+        'day_in': 'em __count__ dia',
+        'day_in_plural': 'em __count__ dias',
+        'month_ago': '__count__ mês atrás',
+        'month_ago_plural': '__count__ meses atrás',
+        'month_in': 'em __count__ mês',
+        'month_in_plural': 'em __count__ meses',
+        'year_ago': '__count__ ano atrás',
+        'year_ago_plural': '__count__ anos atrás',
+        'year_in': 'em __count__ ano',
+        'year_in_plural': 'em __count__ anos'
+      }
+    },
+    zh: {
+      translation: {
+        'now': '刚才',
+        'second_ago': '__count__ 秒钟前',
+        'second_ago_plural': '__count__ 秒钟前',
+        'second_in': '__count__ 秒内',
+        'second_in_plural': '__count__ 秒内',
+        'minute_ago': '__count__ 分钟前',
+        'minute_ago_plural': '__count__ 分钟前',
+        'minute_in': '__count__ 分钟内',
+        'minute_in_plural': '__count__ 分钟内',
+        'hour_ago': '__count__ 小时前',
+        'hour_ago_plural': '__count__ 小时前',
+        'hour_in': '__count__ 小时内',
+        'hour_in_plural': '__count__ 小时内',
+        'day_ago': '__count__ 天前',
+        'day_ago_plural': '__count__ 天前',
+        'day_in': '__count__ 天内',
+        'day_in_plural': '__count__ 天内',
+        'month_ago': '__count__ 月前',
+        'month_ago_plural': '__count__ 月前',
+        'month_in': '__count__ 月内',
+        'month_in_plural': '__count__ 月内',
+        'year_ago': '__count__ 年前',
+        'year_ago_plural': '__count__ 年前',
+        'year_in': '__count__ 年内',
+        'year_in_plural': '__count__ 年内'
+      }
+    },
+    'zh-CN': {
+      translation: {
+        'now': '刚才',
+        'second_ago': '__count__ 秒钟前',
+        'second_ago_plural': '__count__ 秒钟前',
+        'second_in': '__count__ 秒内',
+        'second_in_plural': '__count__ 秒内',
+        'minute_ago': '__count__ 分钟前',
+        'minute_ago_plural': '__count__ 分钟前',
+        'minute_in': '__count__ 分钟内',
+        'minute_in_plural': '__count__ 分钟内',
+        'hour_ago': '__count__ 小时前',
+        'hour_ago_plural': '__count__ 小时前',
+        'hour_in': '__count__ 小时内',
+        'hour_in_plural': '__count__ 小时内',
+        'day_ago': '__count__ 天前',
+        'day_ago_plural': '__count__ 天前',
+        'day_in': '__count__ 天内',
+        'day_in_plural': '__count__ 天内',
+        'month_ago': '__count__ 月前',
+        'month_ago_plural': '__count__ 月前',
+        'month_in': '__count__ 月内',
+        'month_in_plural': '__count__ 月内',
+        'year_ago': '__count__ 年前',
+        'year_ago_plural': '__count__ 年前',
+        'year_in': '__count__ 年内',
+        'year_in_plural': '__count__ 年内'
+      }
+    },
+    'zh-HK': {
+      translation: {
+        'now': '剛才',
+        'second_ago': '__count__ 秒鐘前',
+        'second_ago_plural': '__count__ 秒鐘前',
+        'second_in': '__count__ 秒內',
+        'second_in_plural': '__count__ 秒內',
+        'minute_ago': '__count__ 分鐘前',
+        'minute_ago_plural': '__count__ 分鐘前',
+        'minute_in': '__count__ 分鐘內',
+        'minute_in_plural': '__count__ 分鐘內',
+        'hour_ago': '__count__ 小時前',
+        'hour_ago_plural': '__count__ 小時前',
+        'hour_in': '__count__ 小時內',
+        'hour_in_plural': '__count__ 小時內',
+        'day_ago': '__count__ 天前',
+        'day_ago_plural': '__count__ 天前',
+        'day_in': '__count__ 天內',
+        'day_in_plural': '__count__ 天內',
+        'month_ago': '__count__ 月前',
+        'month_ago_plural': '__count__ 月前',
+        'month_in': '__count__ 月內',
+        'month_in_plural': '__count__ 月內',
+        'year_ago': '__count__ 年前',
+        'year_ago_plural': '__count__ 年前',
+        'year_in': '__count__ 年內',
+        'year_in_plural': '__count__ 年內'
+      }
+    },
+    'zh-TW': {
+      translation: {
+        'now': '剛才',
+        'second_ago': '__count__ 秒鐘前',
+        'second_ago_plural': '__count__ 秒鐘前',
+        'second_in': '__count__ 秒內',
+        'second_in_plural': '__count__ 秒內',
+        'minute_ago': '__count__ 分鐘前',
+        'minute_ago_plural': '__count__ 分鐘前',
+        'minute_in': '__count__ 分鐘內',
+        'minute_in_plural': '__count__ 分鐘內',
+        'hour_ago': '__count__ 小時前',
+        'hour_ago_plural': '__count__ 小時前',
+        'hour_in': '__count__ 小時內',
+        'hour_in_plural': '__count__ 小時內',
+        'day_ago': '__count__ 天前',
+        'day_ago_plural': '__count__ 天前',
+        'day_in': '__count__ 天內',
+        'day_in_plural': '__count__ 天內',
+        'month_ago': '__count__ 月前',
+        'month_ago_plural': '__count__ 月前',
+        'month_in': '__count__ 月內',
+        'month_in_plural': '__count__ 月內',
+        'year_ago': '__count__ 年前',
+        'year_ago_plural': '__count__ 年前',
+        'year_in': '__count__ 年內',
+        'year_in_plural': '__count__ 年內'
+      }
+    }
+  };
+});
+define('aurelia-i18n/df',['exports', 'aurelia-logging', './i18n', 'aurelia-templating-resources', 'aurelia-binding', './utils'], function (exports, _aureliaLogging, _i18n, _aureliaTemplatingResources, _aureliaBinding, _utils) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.DfBindingBehavior = exports.DfValueConverter = undefined;
+
+  var LogManager = _interopRequireWildcard(_aureliaLogging);
+
+  function _interopRequireWildcard(obj) {
+    if (obj && obj.__esModule) {
+      return obj;
+    } else {
+      var newObj = {};
+
+      if (obj != null) {
+        for (var key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+        }
+      }
+
+      newObj.default = obj;
+      return newObj;
+    }
+  }
+
+  
+
+  var DfValueConverter = exports.DfValueConverter = function () {
+    DfValueConverter.inject = function inject() {
+      return [_i18n.I18N];
+    };
+
+    function DfValueConverter(i18n) {
+      
+
+      this.service = i18n;
+    }
+
+    DfValueConverter.prototype.toView = function toView(value, dfOrOptions, locale, df) {
+      if (value === null || typeof value === 'undefined' || typeof value === 'string' && value.trim() === '') {
+        return value;
+      }
+
+      if (dfOrOptions && typeof dfOrOptions.format === 'function') {
+        return dfOrOptions.format(value);
+      } else if (df) {
+        var i18nLogger = LogManager.getLogger('i18n');
+        i18nLogger.warn('This ValueConverter signature is depcrecated and will be removed in future releases. Please use the signature [dfOrOptions, locale]');
+      } else {
+        df = this.service.df(dfOrOptions, locale || this.service.getLocale());
+      }
+
+      if (typeof value === 'string' && isNaN(value) && !(0, _utils.isInteger)(value)) {
+        value = new Date(value);
+      }
+
+      return df.format(value);
+    };
+
+    return DfValueConverter;
+  }();
+
+  var DfBindingBehavior = exports.DfBindingBehavior = function () {
+    DfBindingBehavior.inject = function inject() {
+      return [_aureliaTemplatingResources.SignalBindingBehavior];
+    };
+
+    function DfBindingBehavior(signalBindingBehavior) {
+      
+
+      this.signalBindingBehavior = signalBindingBehavior;
+    }
+
+    DfBindingBehavior.prototype.bind = function bind(binding, source) {
+      this.signalBindingBehavior.bind(binding, source, 'aurelia-translation-signal');
+
+      var sourceExpression = binding.sourceExpression;
+
+      if (sourceExpression.rewritten) {
+        return;
+      }
+      sourceExpression.rewritten = true;
+
+      var expression = sourceExpression.expression;
+      sourceExpression.expression = new _aureliaBinding.ValueConverter(expression, 'df', sourceExpression.args, [expression].concat(sourceExpression.args));
+    };
+
+    DfBindingBehavior.prototype.unbind = function unbind(binding, source) {
+      this.signalBindingBehavior.unbind(binding, source);
+    };
+
+    return DfBindingBehavior;
+  }();
+});
+define('aurelia-i18n/utils',['exports', 'aurelia-dependency-injection'], function (exports, _aureliaDependencyInjection) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.LazyOptional = exports.assignObjectToKeys = exports.isInteger = exports.extend = undefined;
+
+  
+
+  var _dec, _class;
+
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+  };
+
+  var extend = exports.extend = function extend(destination, source) {
+    for (var property in source) {
+      destination[property] = source[property];
+    }
+
+    return destination;
+  };
+
+  var isInteger = exports.isInteger = Number.isInteger || function (value) {
+    return typeof value === 'number' && isFinite(value) && Math.floor(value) === value;
+  };
+
+  var assignObjectToKeys = exports.assignObjectToKeys = function assignObjectToKeys(root, obj) {
+    if (obj === undefined || obj === null) {
+      return obj;
+    }
+
+    var opts = {};
+
+    Object.keys(obj).map(function (key) {
+      if (_typeof(obj[key]) === 'object') {
+        extend(opts, assignObjectToKeys(key, obj[key]));
+      } else {
+        opts[root !== '' ? root + '.' + key : key] = obj[key];
+      }
+    });
+
+    return opts;
+  };
+
+  var LazyOptional = exports.LazyOptional = (_dec = (0, _aureliaDependencyInjection.resolver)(), _dec(_class = function () {
+    function LazyOptional(key) {
+      
+
+      this.key = key;
+    }
+
+    LazyOptional.prototype.get = function get(container) {
+      var _this = this;
+
+      return function () {
+        if (container.hasResolver(_this.key, false)) {
+          return container.get(_this.key);
+        }
+        return null;
+      };
+    };
+
+    LazyOptional.of = function of(key) {
+      return new LazyOptional(key);
+    };
+
+    return LazyOptional;
+  }()) || _class);
+});
+define('aurelia-i18n/nf',['exports', 'aurelia-logging', './i18n', 'aurelia-templating-resources', 'aurelia-binding'], function (exports, _aureliaLogging, _i18n, _aureliaTemplatingResources, _aureliaBinding) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.NfBindingBehavior = exports.NfValueConverter = undefined;
+
+  var LogManager = _interopRequireWildcard(_aureliaLogging);
+
+  function _interopRequireWildcard(obj) {
+    if (obj && obj.__esModule) {
+      return obj;
+    } else {
+      var newObj = {};
+
+      if (obj != null) {
+        for (var key in obj) {
+          if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+        }
+      }
+
+      newObj.default = obj;
+      return newObj;
+    }
+  }
+
+  
+
+  var NfValueConverter = exports.NfValueConverter = function () {
+    NfValueConverter.inject = function inject() {
+      return [_i18n.I18N];
+    };
+
+    function NfValueConverter(i18n) {
+      
+
+      this.service = i18n;
+    }
+
+    NfValueConverter.prototype.toView = function toView(value, nfOrOptions, locale, nf) {
+      if (value === null || typeof value === 'undefined' || typeof value === 'string' && value.trim() === '') {
+        return value;
+      }
+
+      if (nfOrOptions && typeof nfOrOptions.format === 'function') {
+        return nfOrOptions.format(value);
+      } else if (nf) {
+        var i18nLogger = LogManager.getLogger('i18n');
+        i18nLogger.warn('This ValueConverter signature is depcrecated and will be removed in future releases. Please use the signature [nfOrOptions, locale]');
+      } else {
+        nf = this.service.nf(nfOrOptions, locale || this.service.getLocale());
+      }
+
+      return nf.format(value);
+    };
+
+    return NfValueConverter;
+  }();
+
+  var NfBindingBehavior = exports.NfBindingBehavior = function () {
+    NfBindingBehavior.inject = function inject() {
+      return [_aureliaTemplatingResources.SignalBindingBehavior];
+    };
+
+    function NfBindingBehavior(signalBindingBehavior) {
+      
+
+      this.signalBindingBehavior = signalBindingBehavior;
+    }
+
+    NfBindingBehavior.prototype.bind = function bind(binding, source) {
+      this.signalBindingBehavior.bind(binding, source, 'aurelia-translation-signal');
+
+      var sourceExpression = binding.sourceExpression;
+
+      if (sourceExpression.rewritten) {
+        return;
+      }
+      sourceExpression.rewritten = true;
+
+      var expression = sourceExpression.expression;
+      sourceExpression.expression = new _aureliaBinding.ValueConverter(expression, 'nf', sourceExpression.args, [expression].concat(sourceExpression.args));
+    };
+
+    NfBindingBehavior.prototype.unbind = function unbind(binding, source) {
+      this.signalBindingBehavior.unbind(binding, source);
+    };
+
+    return NfBindingBehavior;
+  }();
+});
+define('aurelia-i18n/rt',['exports', './relativeTime', 'aurelia-templating-resources', 'aurelia-binding'], function (exports, _relativeTime, _aureliaTemplatingResources, _aureliaBinding) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.RtBindingBehavior = exports.RtValueConverter = undefined;
+
+  
+
+  var RtValueConverter = exports.RtValueConverter = function () {
+    RtValueConverter.inject = function inject() {
+      return [_relativeTime.RelativeTime];
+    };
+
+    function RtValueConverter(relativeTime) {
+      
+
+      this.service = relativeTime;
+    }
+
+    RtValueConverter.prototype.toView = function toView(value) {
+      if (value === null || typeof value === 'undefined' || typeof value === 'string' && value.trim() === '') {
+        return value;
+      }
+
+      if (typeof value === 'string' && isNaN(value) && !Number.isInteger(value)) {
+        value = new Date(value);
+      }
+
+      return this.service.getRelativeTime(value);
+    };
+
+    return RtValueConverter;
+  }();
+
+  var RtBindingBehavior = exports.RtBindingBehavior = function () {
+    RtBindingBehavior.inject = function inject() {
+      return [_aureliaTemplatingResources.SignalBindingBehavior];
+    };
+
+    function RtBindingBehavior(signalBindingBehavior) {
+      
+
+      this.signalBindingBehavior = signalBindingBehavior;
+    }
+
+    RtBindingBehavior.prototype.bind = function bind(binding, source) {
+      this.signalBindingBehavior.bind(binding, source, 'aurelia-translation-signal');
+
+      var sourceExpression = binding.sourceExpression;
+
+      if (sourceExpression.rewritten) {
+        return;
+      }
+      sourceExpression.rewritten = true;
+
+      var expression = sourceExpression.expression;
+      sourceExpression.expression = new _aureliaBinding.ValueConverter(expression, 'rt', sourceExpression.args, [expression].concat(sourceExpression.args));
+    };
+
+    RtBindingBehavior.prototype.unbind = function unbind(binding, source) {
+      this.signalBindingBehavior.unbind(binding, source);
+    };
+
+    return RtBindingBehavior;
+  }();
+});
+define('aurelia-i18n/t',['exports', './i18n', 'aurelia-event-aggregator', 'aurelia-metadata', 'aurelia-templating', 'aurelia-templating-resources', 'aurelia-binding', './utils'], function (exports, _i18n, _aureliaEventAggregator, _aureliaMetadata, _aureliaTemplating, _aureliaTemplatingResources, _aureliaBinding, _utils) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.TBindingBehavior = exports.TCustomAttribute = exports.TParamsCustomAttribute = exports.TValueConverter = undefined;
+
+  var _dec, _class, _class2, _temp, _dec2, _class3, _class4, _temp2, _class5, _temp3;
+
+  
+
+  var TValueConverter = exports.TValueConverter = function () {
+    TValueConverter.inject = function inject() {
+      return [_i18n.I18N];
+    };
+
+    function TValueConverter(i18n) {
+      
+
+      this.service = i18n;
+    }
+
+    TValueConverter.prototype.toView = function toView(value, options) {
+      return this.service.tr(value, options);
+    };
+
+    return TValueConverter;
+  }();
+
+  var TParamsCustomAttribute = exports.TParamsCustomAttribute = (_dec = (0, _aureliaTemplating.customAttribute)('t-params'), _dec(_class = (_temp = _class2 = function () {
+    TParamsCustomAttribute.configureAliases = function configureAliases(aliases) {
+      var r = _aureliaMetadata.metadata.getOrCreateOwn(_aureliaMetadata.metadata.resource, _aureliaTemplating.HtmlBehaviorResource, TParamsCustomAttribute);
+      r.aliases = aliases;
+    };
+
+    function TParamsCustomAttribute(element) {
+      
+
+      this.element = element;
+    }
+
+    TParamsCustomAttribute.prototype.valueChanged = function valueChanged() {};
+
+    return TParamsCustomAttribute;
+  }(), _class2.inject = [Element], _temp)) || _class);
+  var TCustomAttribute = exports.TCustomAttribute = (_dec2 = (0, _aureliaTemplating.customAttribute)('t'), _dec2(_class3 = (_temp2 = _class4 = function () {
+    TCustomAttribute.configureAliases = function configureAliases(aliases) {
+      var r = _aureliaMetadata.metadata.getOrCreateOwn(_aureliaMetadata.metadata.resource, _aureliaTemplating.HtmlBehaviorResource, TCustomAttribute);
+      r.aliases = aliases;
+    };
+
+    function TCustomAttribute(element, i18n, ea, tparams) {
+      
+
+      this.element = element;
+      this.service = i18n;
+      this.ea = ea;
+      this.lazyParams = tparams;
+    }
+
+    TCustomAttribute.prototype.bind = function bind() {
+      var _this = this;
+
+      this.params = this.lazyParams();
+
+      if (this.params) {
+        this.params.valueChanged = function (newParams, oldParams) {
+          _this.paramsChanged(_this.value, newParams, oldParams);
+        };
+      }
+
+      var p = this.params !== null ? this.params.value : undefined;
+      this.subscription = this.ea.subscribe('i18n:locale:changed', function () {
+        _this.service.updateValue(_this.element, _this.value, _this.params !== null ? _this.params.value : undefined);
+      });
+
+      this.service.updateValue(this.element, this.value, p);
+    };
+
+    TCustomAttribute.prototype.paramsChanged = function paramsChanged(newValue, newParams) {
+      this.service.updateValue(this.element, newValue, newParams);
+    };
+
+    TCustomAttribute.prototype.valueChanged = function valueChanged(newValue) {
+      var p = this.params !== null ? this.params.value : undefined;
+      this.service.updateValue(this.element, newValue, p);
+    };
+
+    TCustomAttribute.prototype.unbind = function unbind() {
+      if (this.subscription) {
+        this.subscription.dispose();
+      }
+    };
+
+    return TCustomAttribute;
+  }(), _class4.inject = [Element, _i18n.I18N, _aureliaEventAggregator.EventAggregator, _utils.LazyOptional.of(TParamsCustomAttribute)], _temp2)) || _class3);
+  var TBindingBehavior = exports.TBindingBehavior = (_temp3 = _class5 = function () {
+    function TBindingBehavior(signalBindingBehavior) {
+      
+
+      this.signalBindingBehavior = signalBindingBehavior;
+    }
+
+    TBindingBehavior.prototype.bind = function bind(binding, source) {
+      this.signalBindingBehavior.bind(binding, source, 'aurelia-translation-signal');
+
+      var sourceExpression = binding.sourceExpression;
+
+      if (sourceExpression.rewritten) {
+        return;
+      }
+      sourceExpression.rewritten = true;
+
+      var expression = sourceExpression.expression;
+      sourceExpression.expression = new _aureliaBinding.ValueConverter(expression, 't', sourceExpression.args, [expression].concat(sourceExpression.args));
+    };
+
+    TBindingBehavior.prototype.unbind = function unbind(binding, source) {
+      this.signalBindingBehavior.unbind(binding, source);
+    };
+
+    return TBindingBehavior;
+  }(), _class5.inject = [_aureliaTemplatingResources.SignalBindingBehavior], _temp3);
+});
+define('aurelia-i18n/base-i18n',['exports', './i18n', 'aurelia-event-aggregator'], function (exports, _i18n, _aureliaEventAggregator) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+  exports.BaseI18N = undefined;
+
+  
+
+  var _class, _temp;
+
+  var BaseI18N = exports.BaseI18N = (_temp = _class = function () {
+    function BaseI18N(i18n, element, ea) {
+      var _this = this;
+
+      
+
+      this.i18n = i18n;
+      this.element = element;
+
+      this.__i18nDisposer = ea.subscribe('i18n:locale:changed', function () {
+        _this.i18n.updateTranslations(_this.element);
+      });
+    }
+
+    BaseI18N.prototype.attached = function attached() {
+      this.i18n.updateTranslations(this.element);
+    };
+
+    BaseI18N.prototype.detached = function detached() {
+      this.__i18nDisposer.dispose();
+    };
+
+    return BaseI18N;
+  }(), _class.inject = [_i18n.I18N, Element, _aureliaEventAggregator.EventAggregator], _temp);
+});
+define('aurelia-i18n/aurelia-i18n-loader',['exports'], function (exports) {
+  'use strict';
+
+  Object.defineProperty(exports, "__esModule", {
+    value: true
+  });
+
+  
+
+  var _class, _temp;
+
+  var Backend = exports.Backend = (_temp = _class = function () {
+    Backend.with = function _with(loader) {
+      this.loader = loader;
+      return this;
+    };
+
+    function Backend(services) {
+      var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+      
+
+      this.init(services, options);
+      this.type = 'backend';
+    }
+
+    Backend.prototype.init = function init(services) {
+      var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
+
+      this.services = services;
+      this.options = defaults(options, this.options || {}, getDefaults());
+    };
+
+    Backend.prototype.readMulti = function readMulti(languages, namespaces, callback) {
+      var loadPath = this.options.loadPath;
+
+      if (typeof this.options.loadPath === 'function') {
+        loadPath = this.options.loadPath(languages, namespaces);
+      }
+
+      var url = this.services.interpolator.interpolate(loadPath, { lng: languages.join('+'), ns: namespaces.join('+') });
+
+      this.loadUrl(url, callback);
+    };
+
+    Backend.prototype.read = function read(language, namespace, callback) {
+      var loadPath = this.options.loadPath;
+
+      if (typeof this.options.loadPath === 'function') {
+        loadPath = this.options.loadPath([language], [namespace]);
+      }
+
+      var url = this.services.interpolator.interpolate(loadPath, { lng: language, ns: namespace });
+
+      this.loadUrl(url, callback);
+    };
+
+    Backend.prototype.loadUrl = function loadUrl(url, callback) {
+      var _this = this;
+
+      this.constructor.loader.loadText(url).then(function (response) {
+        var ret = void 0;
+        var err = void 0;
+        try {
+          ret = _this.options.parse(response, url);
+        } catch (e) {
+          err = 'failed parsing ' + url + ' to json';
+        }
+        if (err) return callback(err, false);
+        callback(null, ret);
+      }, function (response) {
+        return callback('failed loading ' + url, false);
+      });
+    };
+
+    Backend.prototype.create = function create(languages, namespace, key, fallbackValue) {};
+
+    return Backend;
+  }(), _class.loader = null, _temp);
+
+
+  Backend.type = 'backend';
+  exports.default = Backend;
+
+  var arr = [];
+  var each = arr.forEach;
+  var slice = arr.slice;
+
+  function getDefaults() {
+    return {
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
+      addPath: 'locales/add/{{lng}}/{{ns}}',
+      allowMultiLoading: false,
+      parse: JSON.parse
+    };
+  }
+
+  function defaults(obj) {
+    each.call(slice.call(arguments, 1), function (source) {
+      if (source) {
+        for (var prop in source) {
+          if (obj[prop] === undefined) obj[prop] = source[prop];
+        }
+      }
+    });
+    return obj;
+  }
+});
+!function(e,r){"object"==typeof exports&&"undefined"!=typeof module?module.exports=r():"function"==typeof define&&define.amd?define('intl/Intl.min',r):e.IntlPolyfill=r()}(this,function(){"use strict";function e(e){if("function"==typeof Math.log10)return Math.floor(Math.log10(e));var r=Math.round(Math.log(e)*Math.LOG10E);return r-(Number("1e"+r)>e)}function r(e){for(var t in e)(e instanceof r||Me.call(e,t))&&Ie(this,t,{value:e[t],enumerable:!0,writable:!0,configurable:!0})}function t(){Ie(this,"length",{writable:!0,value:0}),arguments.length&&Ge.apply(this,qe.call(arguments))}function n(){if($e.disableRegExpRestore)return function(){};for(var e={lastMatch:RegExp.lastMatch||"",leftContext:RegExp.leftContext,multiline:RegExp.multiline,input:RegExp.input},r=!1,n=1;n<=9;n++)r=(e["$"+n]=RegExp["$"+n])||r;return function(){var n=/[.?*+^$[\]\\(){}|-]/g,a=e.lastMatch.replace(n,"\\$&"),i=new t;if(r)for(var o=1;o<=9;o++){var s=e["$"+o];s?(s=s.replace(n,"\\$&"),a=a.replace(s,"("+s+")")):a="()"+a,Ge.call(i,a.slice(0,a.indexOf("(")+1)),a=a.slice(a.indexOf("(")+1)}var l=Ze.call(i,"")+a;l=l.replace(/(\\\(|\\\)|[^()])+/g,function(e){return"[\\s\\S]{"+e.replace("\\","").length+"}"});var c=new RegExp(l,e.multiline?"gm":"g");c.lastIndex=e.leftContext.length,c.exec(e.input)}}function a(e){if(null===e)throw new TypeError("Cannot convert null or undefined to object");return"object"===("undefined"==typeof e?"undefined":Ne.typeof(e))?e:Object(e)}function i(e){return"number"==typeof e?e:Number(e)}function o(e){var r=i(e);return isNaN(r)?0:0===r||r===-0||r===+(1/0)||r===-(1/0)?r:r<0?Math.floor(Math.abs(r))*-1:Math.floor(Math.abs(r))}function s(e){var r=o(e);return r<=0?0:r===1/0?Math.pow(2,53)-1:Math.min(r,Math.pow(2,53)-1)}function l(e){return Me.call(e,"__getInternalProperties")?e.__getInternalProperties(Ke):Re(null)}function c(e){cr=e}function u(e){for(var r=e.length;r--;){var t=e.charAt(r);t>="a"&&t<="z"&&(e=e.slice(0,r)+t.toUpperCase()+e.slice(r+1))}return e}function g(e){return!!ir.test(e)&&(!or.test(e)&&!sr.test(e))}function f(e){var r=void 0,t=void 0;e=e.toLowerCase(),t=e.split("-");for(var n=1,a=t.length;n<a;n++)if(2===t[n].length)t[n]=t[n].toUpperCase();else if(4===t[n].length)t[n]=t[n].charAt(0).toUpperCase()+t[n].slice(1);else if(1===t[n].length&&"x"!==t[n])break;e=Ze.call(t,"-"),(r=e.match(lr))&&r.length>1&&(r.sort(),e=e.replace(RegExp("(?:"+lr.source+")+","i"),Ze.call(r,""))),Me.call(ur.tags,e)&&(e=ur.tags[e]),t=e.split("-");for(var i=1,o=t.length;i<o;i++)Me.call(ur.subtags,t[i])?t[i]=ur.subtags[t[i]]:Me.call(ur.extLang,t[i])&&(t[i]=ur.extLang[t[i]][0],1===i&&ur.extLang[t[1]][1]===t[0]&&(t=qe.call(t,i++),o-=1));return Ze.call(t,"-")}function m(){return cr}function v(e){var r=String(e),t=u(r);return gr.test(t)!==!1}function d(e){if(void 0===e)return new t;var r=new t;e="string"==typeof e?[e]:e;for(var n=a(e),i=s(n.length),o=0;o<i;){var l=String(o),c=l in n;if(c){var u=n[l];if(null===u||"string"!=typeof u&&"object"!==("undefined"==typeof u?"undefined":Ne.typeof(u)))throw new TypeError("String or Object type expected");var m=String(u);if(!g(m))throw new RangeError("'"+m+"' is not a structurally valid language tag");m=f(m),Ae.call(r,m)===-1&&Ge.call(r,m)}o++}return r}function h(e,r){for(var t=r;t;){if(Ae.call(e,t)>-1)return t;var n=t.lastIndexOf("-");if(n<0)return;n>=2&&"-"===t.charAt(n-2)&&(n-=2),t=t.substring(0,n)}}function p(e,t){for(var n=0,a=t.length,i=void 0,o=void 0,s=void 0;n<a&&!i;)o=t[n],s=String(o).replace(fr,""),i=h(e,s),n++;var l=new r;if(void 0!==i){if(l["[[locale]]"]=i,String(o)!==String(s)){var c=o.match(fr)[0],u=o.indexOf("-u-");l["[[extension]]"]=c,l["[[extensionIndex]]"]=u}}else l["[[locale]]"]=m();return l}function y(e,r){return p(e,r)}function b(e,t,n,a,i){if(0===e.length)throw new ReferenceError("No locale data has been provided for this object yet.");var o=n["[[localeMatcher]]"],s=void 0;s="lookup"===o?p(e,t):y(e,t);var l=s["[[locale]]"],c=void 0,u=void 0;if(Me.call(s,"[[extension]]")){var g=s["[[extension]]"],m=String.prototype.split;c=m.call(g,"-"),u=c.length}var v=new r;v["[[dataLocale]]"]=l;for(var d="-u",h=0,b=a.length;h<b;){var w=a[h],x=i[l],j=x[w],D=j[0],z="",k=Ae;if(void 0!==c){var O=k.call(c,w);if(O!==-1)if(O+1<u&&c[O+1].length>2){var F=c[O+1],S=k.call(j,F);S!==-1&&(D=F,z="-"+w+"-"+D)}else{var E=k(j,"true");E!==-1&&(D="true")}}if(Me.call(n,"[["+w+"]]")){var L=n["[["+w+"]]"];k.call(j,L)!==-1&&L!==D&&(D=L,z="")}v["[["+w+"]]"]=D,d+=z,h++}if(d.length>2){var P=l.indexOf("-x-");if(P===-1)l+=d;else{var N=l.substring(0,P),T=l.substring(P);l=N+d+T}l=f(l)}return v["[[locale]]"]=l,v}function w(e,r){for(var n=r.length,a=new t,i=0;i<n;){var o=r[i],s=String(o).replace(fr,""),l=h(e,s);void 0!==l&&Ge.call(a,o),i++}var c=qe.call(a);return c}function x(e,r){return w(e,r)}function j(e,t,n){var i=void 0,o=void 0;if(void 0!==n&&(n=new r(a(n)),i=n.localeMatcher,void 0!==i&&(i=String(i),"lookup"!==i&&"best fit"!==i)))throw new RangeError('matcher should be "lookup" or "best fit"');o=void 0===i||"best fit"===i?x(e,t):w(e,t);for(var s in o)Me.call(o,s)&&Ie(o,s,{writable:!1,configurable:!1,value:o[s]});return Ie(o,"length",{writable:!1}),o}function D(e,r,t,n,a){var i=e[r];if(void 0!==i){if(i="boolean"===t?Boolean(i):"string"===t?String(i):i,void 0!==n&&Ae.call(n,i)===-1)throw new RangeError("'"+i+"' is not an allowed value for `"+r+"`");return i}return a}function z(e,r,t,n,a){var i=e[r];if(void 0!==i){if(i=Number(i),isNaN(i)||i<t||i>n)throw new RangeError("Value is not a number or outside accepted range");return Math.floor(i)}return a}function k(e){for(var r=d(e),t=[],n=r.length,a=0;a<n;)t[a]=r[a],a++;return t}function O(){var e=arguments[0],r=arguments[1];return this&&this!==mr?F(a(this),e,r):new mr.NumberFormat(e,r)}function F(e,i,o){var s=l(e),c=n();if(s["[[initializedIntlObject]]"]===!0)throw new TypeError("`this` object has already been initialized as an Intl object");Ie(e,"__getInternalProperties",{value:function(){if(arguments[0]===Ke)return s}}),s["[[initializedIntlObject]]"]=!0;var u=d(i);o=void 0===o?{}:a(o);var g=new r,f=D(o,"localeMatcher","string",new t("lookup","best fit"),"best fit");g["[[localeMatcher]]"]=f;var m=$e.NumberFormat["[[localeData]]"],h=b($e.NumberFormat["[[availableLocales]]"],u,g,$e.NumberFormat["[[relevantExtensionKeys]]"],m);s["[[locale]]"]=h["[[locale]]"],s["[[numberingSystem]]"]=h["[[nu]]"],s["[[dataLocale]]"]=h["[[dataLocale]]"];var p=h["[[dataLocale]]"],y=D(o,"style","string",new t("decimal","percent","currency"),"decimal");s["[[style]]"]=y;var w=D(o,"currency","string");if(void 0!==w&&!v(w))throw new RangeError("'"+w+"' is not a valid currency code");if("currency"===y&&void 0===w)throw new TypeError("Currency code is required when style is currency");var x=void 0;"currency"===y&&(w=w.toUpperCase(),s["[[currency]]"]=w,x=S(w));var j=D(o,"currencyDisplay","string",new t("code","symbol","name"),"symbol");"currency"===y&&(s["[[currencyDisplay]]"]=j);var k=z(o,"minimumIntegerDigits",1,21,1);s["[[minimumIntegerDigits]]"]=k;var O="currency"===y?x:0,F=z(o,"minimumFractionDigits",0,20,O);s["[[minimumFractionDigits]]"]=F;var L="currency"===y?Math.max(F,x):"percent"===y?Math.max(F,0):Math.max(F,3),P=z(o,"maximumFractionDigits",F,20,L);s["[[maximumFractionDigits]]"]=P;var N=o.minimumSignificantDigits,T=o.maximumSignificantDigits;void 0===N&&void 0===T||(N=z(o,"minimumSignificantDigits",1,21,1),T=z(o,"maximumSignificantDigits",N,21,21),s["[[minimumSignificantDigits]]"]=N,s["[[maximumSignificantDigits]]"]=T);var _=D(o,"useGrouping","boolean",void 0,!0);s["[[useGrouping]]"]=_;var M=m[p],I=M.patterns,A=I[y];return s["[[positivePattern]]"]=A.positivePattern,s["[[negativePattern]]"]=A.negativePattern,s["[[boundFormat]]"]=void 0,s["[[initializedNumberFormat]]"]=!0,_e&&(e.format=E.call(e)),c(),e}function S(e){return void 0!==vr[e]?vr[e]:2}function E(){var e=null!==this&&"object"===Ne.typeof(this)&&l(this);if(!e||!e["[[initializedNumberFormat]]"])throw new TypeError("`this` value for format() is not an initialized Intl.NumberFormat object.");if(void 0===e["[[boundFormat]]"]){var r=function(e){return T(this,Number(e))},t=Ue.call(r,this);e["[[boundFormat]]"]=t}return e["[[boundFormat]]"]}function L(){var e=arguments.length<=0||void 0===arguments[0]?void 0:arguments[0],r=null!==this&&"object"===Ne.typeof(this)&&l(this);if(!r||!r["[[initializedNumberFormat]]"])throw new TypeError("`this` value for formatToParts() is not an initialized Intl.NumberFormat object.");var t=Number(e);return P(this,t)}function P(e,r){for(var t=N(e,r),n=[],a=0,i=0;t.length>i;i++){var o=t[i],s={};s.type=o["[[type]]"],s.value=o["[[value]]"],n[a]=s,a+=1}return n}function N(e,r){var n=l(e),a=n["[[dataLocale]]"],i=n["[[numberingSystem]]"],o=$e.NumberFormat["[[localeData]]"][a],s=o.symbols[i]||o.symbols.latn,c=void 0;!isNaN(r)&&r<0?(r=-r,c=n["[[negativePattern]]"]):c=n["[[positivePattern]]"];for(var u=new t,g=c.indexOf("{",0),f=0,m=0,v=c.length;g>-1&&g<v;){if(f=c.indexOf("}",g),f===-1)throw new Error;if(g>m){var d=c.substring(m,g);Ge.call(u,{"[[type]]":"literal","[[value]]":d})}var h=c.substring(g+1,f);if("number"===h)if(isNaN(r)){var p=s.nan;Ge.call(u,{"[[type]]":"nan","[[value]]":p})}else if(isFinite(r)){"percent"===n["[[style]]"]&&isFinite(r)&&(r*=100);var y=void 0;y=Me.call(n,"[[minimumSignificantDigits]]")&&Me.call(n,"[[maximumSignificantDigits]]")?_(r,n["[[minimumSignificantDigits]]"],n["[[maximumSignificantDigits]]"]):M(r,n["[[minimumIntegerDigits]]"],n["[[minimumFractionDigits]]"],n["[[maximumFractionDigits]]"]),dr[i]?!function(){var e=dr[i];y=String(y).replace(/\d/g,function(r){return e[r]})}():y=String(y);var b=void 0,w=void 0,x=y.indexOf(".",0);if(x>0?(b=y.substring(0,x),w=y.substring(x+1,x.length)):(b=y,w=void 0),n["[[useGrouping]]"]===!0){var j=s.group,D=[],z=o.patterns.primaryGroupSize||3,k=o.patterns.secondaryGroupSize||z;if(b.length>z){var O=b.length-z,F=O%k,S=b.slice(0,F);for(S.length&&Ge.call(D,S);F<O;)Ge.call(D,b.slice(F,F+k)),F+=k;Ge.call(D,b.slice(O))}else Ge.call(D,b);if(0===D.length)throw new Error;for(;D.length;){var E=Be.call(D);Ge.call(u,{"[[type]]":"integer","[[value]]":E}),D.length&&Ge.call(u,{"[[type]]":"group","[[value]]":j})}}else Ge.call(u,{"[[type]]":"integer","[[value]]":b});if(void 0!==w){var L=s.decimal;Ge.call(u,{"[[type]]":"decimal","[[value]]":L}),Ge.call(u,{"[[type]]":"fraction","[[value]]":w})}}else{var P=s.infinity;Ge.call(u,{"[[type]]":"infinity","[[value]]":P})}else if("plusSign"===h){var N=s.plusSign;Ge.call(u,{"[[type]]":"plusSign","[[value]]":N})}else if("minusSign"===h){var T=s.minusSign;Ge.call(u,{"[[type]]":"minusSign","[[value]]":T})}else if("percentSign"===h&&"percent"===n["[[style]]"]){var I=s.percentSign;Ge.call(u,{"[[type]]":"literal","[[value]]":I})}else if("currency"===h&&"currency"===n["[[style]]"]){var A=n["[[currency]]"],R=void 0;"code"===n["[[currencyDisplay]]"]?R=A:"symbol"===n["[[currencyDisplay]]"]?R=o.currencies[A]||A:"name"===n["[[currencyDisplay]]"]&&(R=A),Ge.call(u,{"[[type]]":"currency","[[value]]":R})}else{var q=c.substring(g,f);Ge.call(u,{"[[type]]":"literal","[[value]]":q})}m=f+1,g=c.indexOf("{",m)}if(m<v){var C=c.substring(m,v);Ge.call(u,{"[[type]]":"literal","[[value]]":C})}return u}function T(e,r){for(var t=N(e,r),n="",a=0;t.length>a;a++){var i=t[a];n+=i["[[value]]"]}return n}function _(r,t,n){var a=n,i=void 0,o=void 0;if(0===r)i=Ze.call(Array(a+1),"0"),o=0;else{o=e(Math.abs(r));var s=Math.round(Math.exp(Math.abs(o-a+1)*Math.LN10));i=String(Math.round(o-a+1<0?r*s:r/s))}if(o>=a)return i+Ze.call(Array(o-a+1+1),"0");if(o===a-1)return i;if(o>=0?i=i.slice(0,o+1)+"."+i.slice(o+1):o<0&&(i="0."+Ze.call(Array(-(o+1)+1),"0")+i),i.indexOf(".")>=0&&n>t){for(var l=n-t;l>0&&"0"===i.charAt(i.length-1);)i=i.slice(0,-1),l--;"."===i.charAt(i.length-1)&&(i=i.slice(0,-1))}return i}function M(e,r,t,n){var a=n,i=Math.pow(10,a)*e,o=0===i?"0":i.toFixed(0),s=void 0,l=(s=o.indexOf("e"))>-1?o.slice(s+1):0;l&&(o=o.slice(0,s).replace(".",""),o+=Ze.call(Array(l-(o.length-1)+1),"0"));var c=void 0;if(0!==a){var u=o.length;if(u<=a){var g=Ze.call(Array(a+1-u+1),"0");o=g+o,u=a+1}var f=o.substring(0,u-a),m=o.substring(u-a,o.length);o=f+"."+m,c=f.length}else c=o.length;for(var v=n-t;v>0&&"0"===o.slice(-1);)o=o.slice(0,-1),v--;if("."===o.slice(-1)&&(o=o.slice(0,-1)),c<r){var d=Ze.call(Array(r-c+1),"0");o=d+o}return o}function I(e){for(var r=0;r<wr.length;r+=1)if(e.hasOwnProperty(wr[r]))return!1;return!0}function A(e){for(var r=0;r<br.length;r+=1)if(e.hasOwnProperty(br[r]))return!1;return!0}function R(e,r){for(var t={_:{}},n=0;n<br.length;n+=1)e[br[n]]&&(t[br[n]]=e[br[n]]),e._[br[n]]&&(t._[br[n]]=e._[br[n]]);for(var a=0;a<wr.length;a+=1)r[wr[a]]&&(t[wr[a]]=r[wr[a]]),r._[wr[a]]&&(t._[wr[a]]=r._[wr[a]]);return t}function q(e){return e.pattern12=e.extendedPattern.replace(/'([^']*)'/g,function(e,r){return r?r:"'"}),e.pattern=e.pattern12.replace("{ampm}","").replace(pr,""),e}function C(e,r){switch(e.charAt(0)){case"G":return r.era=["short","short","short","long","narrow"][e.length-1],"{era}";case"y":case"Y":case"u":case"U":case"r":return r.year=2===e.length?"2-digit":"numeric","{year}";case"Q":case"q":return r.quarter=["numeric","2-digit","short","long","narrow"][e.length-1],"{quarter}";case"M":case"L":return r.month=["numeric","2-digit","short","long","narrow"][e.length-1],"{month}";case"w":return r.week=2===e.length?"2-digit":"numeric","{weekday}";case"W":return r.week="numeric","{weekday}";case"d":return r.day=2===e.length?"2-digit":"numeric","{day}";case"D":case"F":case"g":return r.day="numeric","{day}";case"E":return r.weekday=["short","short","short","long","narrow","short"][e.length-1],"{weekday}";case"e":return r.weekday=["numeric","2-digit","short","long","narrow","short"][e.length-1],"{weekday}";case"c":return r.weekday=["numeric",void 0,"short","long","narrow","short"][e.length-1],"{weekday}";case"a":case"b":case"B":return r.hour12=!0,"{ampm}";case"h":case"H":return r.hour=2===e.length?"2-digit":"numeric","{hour}";case"k":case"K":return r.hour12=!0,r.hour=2===e.length?"2-digit":"numeric","{hour}";case"m":return r.minute=2===e.length?"2-digit":"numeric","{minute}";case"s":return r.second=2===e.length?"2-digit":"numeric","{second}";case"S":case"A":return r.second="numeric","{second}";case"z":case"Z":case"O":case"v":case"V":case"X":case"x":return r.timeZoneName=e.length<4?"short":"long","{timeZoneName}"}}function G(e,r){if(!yr.test(r)){var t={originalPattern:r,_:{}};return t.extendedPattern=r.replace(hr,function(e){return C(e,t._)}),e.replace(hr,function(e){return C(e,t)}),q(t)}}function Z(e){var r=e.availableFormats,t=e.timeFormats,n=e.dateFormats,a=[],i=void 0,o=void 0,s=void 0,l=void 0,c=void 0,u=[],g=[];for(i in r)r.hasOwnProperty(i)&&(o=r[i],s=G(i,o),s&&(a.push(s),I(s)?g.push(s):A(s)&&u.push(s)));for(i in t)t.hasOwnProperty(i)&&(o=t[i],s=G(i,o),s&&(a.push(s),u.push(s)));for(i in n)n.hasOwnProperty(i)&&(o=n[i],s=G(i,o),s&&(a.push(s),g.push(s)));for(l=0;l<u.length;l+=1)for(c=0;c<g.length;c+=1)o="long"===g[c].month?g[c].weekday?e.full:e.long:"short"===g[c].month?e.medium:e.short,s=R(g[c],u[l]),s.originalPattern=o,s.extendedPattern=o.replace("{0}",u[l].extendedPattern).replace("{1}",g[c].extendedPattern).replace(/^[,\s]+|[,\s]+$/gi,""),a.push(q(s));return a}function B(e,r){if(xr[e]&&xr[e][r]){var t;return t={originalPattern:xr[e][r],_:ge({},e,r),extendedPattern:"{"+e+"}"},ge(t,e,r),ge(t,"pattern12","{"+e+"}"),ge(t,"pattern","{"+e+"}"),t}}function U(e,r,t,n,a){var i=e[r]&&e[r][t]?e[r][t]:e.gregory[t],o={narrow:["short","long"],short:["long","narrow"],long:["short","narrow"]},s=Me.call(i,n)?i[n]:Me.call(i,o[n][0])?i[o[n][0]]:i[o[n][1]];return null!==a?s[a]:s}function $(){var e=arguments[0],r=arguments[1];return this&&this!==mr?K(a(this),e,r):new mr.DateTimeFormat(e,r)}function K(e,a,i){var o=l(e),s=n();if(o["[[initializedIntlObject]]"]===!0)throw new TypeError("`this` object has already been initialized as an Intl object");Ie(e,"__getInternalProperties",{value:function(){if(arguments[0]===Ke)return o}}),o["[[initializedIntlObject]]"]=!0;var c=d(a);i=H(i,"any","date");var g=new r,f=D(i,"localeMatcher","string",new t("lookup","best fit"),"best fit");g["[[localeMatcher]]"]=f;var m=$e.DateTimeFormat,v=m["[[localeData]]"],h=b(m["[[availableLocales]]"],c,g,m["[[relevantExtensionKeys]]"],v);o["[[locale]]"]=h["[[locale]]"],o["[[calendar]]"]=h["[[ca]]"],o["[[numberingSystem]]"]=h["[[nu]]"],o["[[dataLocale]]"]=h["[[dataLocale]]"];var p=h["[[dataLocale]]"],y=i.timeZone;if(void 0!==y&&(y=u(y),"UTC"!==y))throw new RangeError("timeZone is not supported.");o["[[timeZone]]"]=y,g=new r;for(var w in Dr)if(Me.call(Dr,w)){var x=D(i,w,"string",Dr[w]);g["[["+w+"]]"]=x}var j=void 0,z=v[p],k=Y(z.formats);if(f=D(i,"formatMatcher","string",new t("basic","best fit"),"best fit"),z.formats=k,"basic"===f)j=W(g,k);else{var O=D(i,"hour12","boolean");g.hour12=void 0===O?z.hour12:O,j=X(g,k)}for(var F in Dr)if(Me.call(Dr,F)&&Me.call(j,F)){var S=j[F];S=j._&&Me.call(j._,F)?j._[F]:S,o["[["+F+"]]"]=S}var E=void 0,L=D(i,"hour12","boolean");if(o["[[hour]]"])if(L=void 0===L?z.hour12:L,o["[[hour12]]"]=L,L===!0){var P=z.hourNo0;o["[[hourNo0]]"]=P,E=j.pattern12}else E=j.pattern;else E=j.pattern;return o["[[pattern]]"]=E,o["[[boundFormat]]"]=void 0,o["[[initializedDateTimeFormat]]"]=!0,_e&&(e.format=V.call(e)),s(),e}function Y(e){return"[object Array]"===Object.prototype.toString.call(e)?e:Z(e)}function H(e,t,n){if(void 0===e)e=null;else{var i=a(e);e=new r;for(var o in i)e[o]=i[o]}var s=Re;e=s(e);var l=!0;return"date"!==t&&"any"!==t||void 0===e.weekday&&void 0===e.year&&void 0===e.month&&void 0===e.day||(l=!1),"time"!==t&&"any"!==t||void 0===e.hour&&void 0===e.minute&&void 0===e.second||(l=!1),!l||"date"!==n&&"all"!==n||(e.year=e.month=e.day="numeric"),!l||"time"!==n&&"all"!==n||(e.hour=e.minute=e.second="numeric"),e}function W(e,r){for(var t=120,n=20,a=8,i=6,o=6,s=3,l=-(1/0),c=void 0,u=0,g=r.length;u<g;){var f=r[u],m=0;for(var v in Dr)if(Me.call(Dr,v)){var d=e["[["+v+"]]"],h=Me.call(f,v)?f[v]:void 0;if(void 0===d&&void 0!==h)m-=n;else if(void 0!==d&&void 0===h)m-=t;else{var p=["2-digit","numeric","narrow","short","long"],y=Ae.call(p,d),b=Ae.call(p,h),w=Math.max(Math.min(b-y,2),-2);2===w?m-=i:1===w?m-=s:w===-1?m-=o:w===-2&&(m-=a)}}m>l&&(l=m,c=f),u++}return c}function X(e,r){var t=[];for(var n in Dr)Me.call(Dr,n)&&void 0!==e["[["+n+"]]"]&&t.push(n);if(1===t.length){var a=B(t[0],e["[["+t[0]+"]]"]);if(a)return a}for(var i=120,o=20,s=8,l=6,c=6,u=3,g=2,f=1,m=-(1/0),v=void 0,d=0,h=r.length;d<h;){var p=r[d],y=0;for(var b in Dr)if(Me.call(Dr,b)){var w=e["[["+b+"]]"],x=Me.call(p,b)?p[b]:void 0,j=Me.call(p._,b)?p._[b]:void 0;if(w!==j&&(y-=g),void 0===w&&void 0!==x)y-=o;else if(void 0!==w&&void 0===x)y-=i;else{var D=["2-digit","numeric","narrow","short","long"],z=Ae.call(D,w),k=Ae.call(D,x),O=Math.max(Math.min(k-z,2),-2);k<=1&&z>=2||k>=2&&z<=1?O>0?y-=l:O<0&&(y-=s):O>1?y-=u:O<-1&&(y-=c)}}p._.hour12!==e.hour12&&(y-=f),y>m&&(m=y,v=p),d++}return v}function V(){var e=null!==this&&"object"===Ne.typeof(this)&&l(this);if(!e||!e["[[initializedDateTimeFormat]]"])throw new TypeError("`this` value for format() is not an initialized Intl.DateTimeFormat object.");if(void 0===e["[[boundFormat]]"]){var r=function(){var e=arguments.length<=0||void 0===arguments[0]?void 0:arguments[0],r=void 0===e?Date.now():i(e);return ee(this,r)},t=Ue.call(r,this);e["[[boundFormat]]"]=t}return e["[[boundFormat]]"]}function J(){var e=arguments.length<=0||void 0===arguments[0]?void 0:arguments[0],r=null!==this&&"object"===Ne.typeof(this)&&l(this);if(!r||!r["[[initializedDateTimeFormat]]"])throw new TypeError("`this` value for formatToParts() is not an initialized Intl.DateTimeFormat object.");var t=void 0===e?Date.now():i(e);return re(this,t)}function Q(e,r){if(!isFinite(r))throw new RangeError("Invalid valid date passed to format");var a=e.__getInternalProperties(Ke);n();for(var i=a["[[locale]]"],o=new mr.NumberFormat([i],{useGrouping:!1}),s=new mr.NumberFormat([i],{minimumIntegerDigits:2,useGrouping:!1}),l=te(r,a["[[calendar]]"],a["[[timeZone]]"]),c=a["[[pattern]]"],u=new t,g=0,f=c.indexOf("{"),m=0,v=a["[[dataLocale]]"],d=$e.DateTimeFormat["[[localeData]]"][v].calendars,h=a["[[calendar]]"];f!==-1;){var p=void 0;if(m=c.indexOf("}",f),m===-1)throw new Error("Unclosed pattern");f>g&&Ge.call(u,{type:"literal",value:c.substring(g,f)});var y=c.substring(f+1,m);if(Dr.hasOwnProperty(y)){var b=a["[["+y+"]]"],w=l["[["+y+"]]"];if("year"===y&&w<=0?w=1-w:"month"===y?w++:"hour"===y&&a["[[hour12]]"]===!0&&(w%=12,0===w&&a["[[hourNo0]]"]===!0&&(w=12)),"numeric"===b)p=T(o,w);else if("2-digit"===b)p=T(s,w),p.length>2&&(p=p.slice(-2));else if(b in jr)switch(y){case"month":p=U(d,h,"months",b,l["[["+y+"]]"]);break;case"weekday":try{p=U(d,h,"days",b,l["[["+y+"]]"])}catch(e){throw new Error("Could not find weekday data for locale "+i)}break;case"timeZoneName":p="";break;case"era":try{p=U(d,h,"eras",b,l["[["+y+"]]"])}catch(e){throw new Error("Could not find era data for locale "+i)}break;default:p=l["[["+y+"]]"]}Ge.call(u,{type:y,value:p})}else if("ampm"===y){var x=l["[[hour]]"];p=U(d,h,"dayPeriods",x>11?"pm":"am",null),Ge.call(u,{type:"dayPeriod",value:p})}else Ge.call(u,{type:"literal",value:c.substring(f,m+1)});g=m+1,f=c.indexOf("{",g)}return m<c.length-1&&Ge.call(u,{type:"literal",value:c.substr(m+1)}),u}function ee(e,r){for(var t=Q(e,r),n="",a=0;t.length>a;a++){var i=t[a];n+=i.value}return n}function re(e,r){for(var t=Q(e,r),n=[],a=0;t.length>a;a++){var i=t[a];n.push({type:i.type,value:i.value})}return n}function te(e,t,n){var a=new Date(e),i="get"+(n||"");return new r({"[[weekday]]":a[i+"Day"](),"[[era]]":+(a[i+"FullYear"]()>=0),"[[year]]":a[i+"FullYear"](),"[[month]]":a[i+"Month"](),"[[day]]":a[i+"Date"](),"[[hour]]":a[i+"Hours"](),"[[minute]]":a[i+"Minutes"](),"[[second]]":a[i+"Seconds"](),"[[inDST]]":!1})}function ne(e,r){if(!e.number)throw new Error("Object passed doesn't contain locale data for Intl.NumberFormat");var t=void 0,n=[r],a=r.split("-");for(a.length>2&&4===a[1].length&&Ge.call(n,a[0]+"-"+a[2]);t=Be.call(n);)Ge.call($e.NumberFormat["[[availableLocales]]"],t),$e.NumberFormat["[[localeData]]"][t]=e.number,e.date&&(e.date.nu=e.number.nu,Ge.call($e.DateTimeFormat["[[availableLocales]]"],t),$e.DateTimeFormat["[[localeData]]"][t]=e.date);void 0===cr&&c(r)}var ae="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol?"symbol":typeof e},ie=function(){var e="function"==typeof Symbol&&Symbol.for&&Symbol.for("react.element")||60103;return function(r,t,n,a){var i=r&&r.defaultProps,o=arguments.length-3;if(t||0===o||(t={}),t&&i)for(var s in i)void 0===t[s]&&(t[s]=i[s]);else t||(t=i||{});if(1===o)t.children=a;else if(o>1){for(var l=Array(o),c=0;c<o;c++)l[c]=arguments[c+3];t.children=l}return{$$typeof:e,type:r,key:void 0===n?null:""+n,ref:null,props:t,_owner:null}}}(),oe=function(e){return function(){var r=e.apply(this,arguments);return new Promise(function(e,t){function n(a,i){try{var o=r[a](i),s=o.value}catch(e){return void t(e)}return o.done?void e(s):Promise.resolve(s).then(function(e){return n("next",e)},function(e){return n("throw",e)})}return n("next")})}},se=function(e,r){if(!(e instanceof r))throw new TypeError("Cannot call a class as a function")},le=function(){function e(e,r){for(var t=0;t<r.length;t++){var n=r[t];n.enumerable=n.enumerable||!1,n.configurable=!0,"value"in n&&(n.writable=!0),Object.defineProperty(e,n.key,n)}}return function(r,t,n){return t&&e(r.prototype,t),n&&e(r,n),r}}(),ce=function(e,r){for(var t in r){var n=r[t];n.configurable=n.enumerable=!0,"value"in n&&(n.writable=!0),Object.defineProperty(e,t,n)}return e},ue=function(e,r){for(var t=Object.getOwnPropertyNames(r),n=0;n<t.length;n++){var a=t[n],i=Object.getOwnPropertyDescriptor(r,a);i&&i.configurable&&void 0===e[a]&&Object.defineProperty(e,a,i)}return e},ge=function(e,r,t){return r in e?Object.defineProperty(e,r,{value:t,enumerable:!0,configurable:!0,writable:!0}):e[r]=t,e},fe=Object.assign||function(e){for(var r=1;r<arguments.length;r++){var t=arguments[r];for(var n in t)Object.prototype.hasOwnProperty.call(t,n)&&(e[n]=t[n])}return e},me=function e(r,t,n){null===r&&(r=Function.prototype);var a=Object.getOwnPropertyDescriptor(r,t);if(void 0===a){var i=Object.getPrototypeOf(r);return null===i?void 0:e(i,t,n)}if("value"in a)return a.value;var o=a.get;if(void 0!==o)return o.call(n)},ve=function(e,r){if("function"!=typeof r&&null!==r)throw new TypeError("Super expression must either be null or a function, not "+typeof r);e.prototype=Object.create(r&&r.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),r&&(Object.setPrototypeOf?Object.setPrototypeOf(e,r):e.__proto__=r)},de=function(e,r){return null!=r&&"undefined"!=typeof Symbol&&r[Symbol.hasInstance]?r[Symbol.hasInstance](e):e instanceof r},he=function(e){return e&&e.__esModule?e:{default:e}},pe=function(e){if(e&&e.__esModule)return e;var r={};if(null!=e)for(var t in e)Object.prototype.hasOwnProperty.call(e,t)&&(r[t]=e[t]);return r.default=e,r},ye=function(e,r){if(e!==r)throw new TypeError("Cannot instantiate an arrow function")},be=function(e){if(null==e)throw new TypeError("Cannot destructure undefined")},we=function(e,r){var t={};for(var n in e)r.indexOf(n)>=0||Object.prototype.hasOwnProperty.call(e,n)&&(t[n]=e[n]);return t},xe=function(e,r){if(!e)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!r||"object"!=typeof r&&"function"!=typeof r?e:r},je="undefined"==typeof global?self:global,De=function e(r,t,n,a){var i=Object.getOwnPropertyDescriptor(r,t);if(void 0===i){var o=Object.getPrototypeOf(r);null!==o&&e(o,t,n,a)}else if("value"in i&&i.writable)i.value=n;else{var s=i.set;void 0!==s&&s.call(a,n)}return n},ze=function(){function e(e,r){var t=[],n=!0,a=!1,i=void 0;try{for(var o,s=e[Symbol.iterator]();!(n=(o=s.next()).done)&&(t.push(o.value),!r||t.length!==r);n=!0);}catch(e){a=!0,i=e}finally{try{!n&&s.return&&s.return()}finally{if(a)throw i}}return t}return function(r,t){if(Array.isArray(r))return r;if(Symbol.iterator in Object(r))return e(r,t);throw new TypeError("Invalid attempt to destructure non-iterable instance")}}(),ke=function(e,r){if(Array.isArray(e))return e;if(Symbol.iterator in Object(e)){for(var t,n=[],a=e[Symbol.iterator]();!(t=a.next()).done&&(n.push(t.value),!r||n.length!==r););return n}throw new TypeError("Invalid attempt to destructure non-iterable instance")},Oe=function(e,r){return Object.freeze(Object.defineProperties(e,{raw:{value:Object.freeze(r)}}))},Fe=function(e,r){return e.raw=r,e},Se=function(e,r,t){if(e===t)throw new ReferenceError(r+" is not defined - temporal dead zone");return e},Ee={},Le=function(e){return Array.isArray(e)?e:Array.from(e)},Pe=function(e){if(Array.isArray(e)){for(var r=0,t=Array(e.length);r<e.length;r++)t[r]=e[r];return t}return Array.from(e)},Ne=Object.freeze({jsx:ie,asyncToGenerator:oe,classCallCheck:se,createClass:le,defineEnumerableProperties:ce,defaults:ue,defineProperty:ge,get:me,inherits:ve,interopRequireDefault:he,interopRequireWildcard:pe,newArrowCheck:ye,objectDestructuringEmpty:be,objectWithoutProperties:we,possibleConstructorReturn:xe,selfGlobal:je,set:De,slicedToArray:ze,slicedToArrayLoose:ke,taggedTemplateLiteral:Oe,taggedTemplateLiteralLoose:Fe,temporalRef:Se,temporalUndefined:Ee,toArray:Le,toConsumableArray:Pe,typeof:ae,extends:fe,instanceof:de}),Te=function(){var e=function(){};try{return Object.defineProperty(e,"a",{get:function(){return 1}}),Object.defineProperty(e,"prototype",{writable:!1}),1===e.a&&e.prototype instanceof Object}catch(e){return!1}}(),_e=!Te&&!Object.prototype.__defineGetter__,Me=Object.prototype.hasOwnProperty,Ie=Te?Object.defineProperty:function(e,r,t){"get"in t&&e.__defineGetter__?e.__defineGetter__(r,t.get):(!Me.call(e,r)||"value"in t)&&(e[r]=t.value)},Ae=Array.prototype.indexOf||function(e){var r=this;if(!r.length)return-1;for(var t=arguments[1]||0,n=r.length;t<n;t++)if(r[t]===e)return t;return-1},Re=Object.create||function(e,r){function t(){}var n=void 0;t.prototype=e,n=new t;for(var a in r)Me.call(r,a)&&Ie(n,a,r[a]);return n},qe=Array.prototype.slice,Ce=Array.prototype.concat,Ge=Array.prototype.push,Ze=Array.prototype.join,Be=Array.prototype.shift,Ue=Function.prototype.bind||function(e){var r=this,t=qe.call(arguments,1);return 1===r.length?function(){return r.apply(e,Ce.call(t,qe.call(arguments)))}:function(){return r.apply(e,Ce.call(t,qe.call(arguments)))}},$e=Re(null),Ke=Math.random();r.prototype=Re(null),t.prototype=Re(null);var Ye="[a-z]{3}(?:-[a-z]{3}){0,2}",He="(?:[a-z]{2,3}(?:-"+Ye+")?|[a-z]{4}|[a-z]{5,8})",We="[a-z]{4}",Xe="(?:[a-z]{2}|\\d{3})",Ve="(?:[a-z0-9]{5,8}|\\d[a-z0-9]{3})",Je="[0-9a-wy-z]",Qe=Je+"(?:-[a-z0-9]{2,8})+",er="x(?:-[a-z0-9]{1,8})+",rr="(?:en-GB-oed|i-(?:ami|bnn|default|enochian|hak|klingon|lux|mingo|navajo|pwn|tao|tay|tsu)|sgn-(?:BE-FR|BE-NL|CH-DE))",tr="(?:art-lojban|cel-gaulish|no-bok|no-nyn|zh-(?:guoyu|hakka|min|min-nan|xiang))",nr="(?:"+rr+"|"+tr+")",ar=He+"(?:-"+We+")?(?:-"+Xe+")?(?:-"+Ve+")*(?:-"+Qe+")*(?:-"+er+")?",ir=RegExp("^(?:"+ar+"|"+er+"|"+nr+")$","i"),or=RegExp("^(?!x).*?-("+Ve+")-(?:\\w{4,8}-(?!x-))*\\1\\b","i"),sr=RegExp("^(?!x).*?-("+Je+")-(?:\\w+-(?!x-))*\\1\\b","i"),lr=RegExp("-"+Qe,"ig"),cr=void 0,ur={tags:{"art-lojban":"jbo","i-ami":"ami","i-bnn":"bnn","i-hak":"hak","i-klingon":"tlh","i-lux":"lb","i-navajo":"nv","i-pwn":"pwn","i-tao":"tao","i-tay":"tay","i-tsu":"tsu","no-bok":"nb","no-nyn":"nn","sgn-BE-FR":"sfb","sgn-BE-NL":"vgt","sgn-CH-DE":"sgg","zh-guoyu":"cmn","zh-hakka":"hak","zh-min-nan":"nan","zh-xiang":"hsn","sgn-BR":"bzs","sgn-CO":"csn","sgn-DE":"gsg","sgn-DK":"dsl","sgn-ES":"ssp","sgn-FR":"fsl","sgn-GB":"bfi","sgn-GR":"gss","sgn-IE":"isg","sgn-IT":"ise","sgn-JP":"jsl","sgn-MX":"mfs","sgn-NI":"ncs","sgn-NL":"dse","sgn-NO":"nsl","sgn-PT":"psr","sgn-SE":"swl","sgn-US":"ase","sgn-ZA":"sfs","zh-cmn":"cmn","zh-cmn-Hans":"cmn-Hans","zh-cmn-Hant":"cmn-Hant","zh-gan":"gan","zh-wuu":"wuu","zh-yue":"yue"},subtags:{BU:"MM",DD:"DE",FX:"FR",TP:"TL",YD:"YE",ZR:"CD",heploc:"alalc97",in:"id",iw:"he",ji:"yi",jw:"jv",mo:"ro",ayx:"nun",bjd:"drl",ccq:"rki",cjr:"mom",cka:"cmr",cmk:"xch",drh:"khk",drw:"prs",gav:"dev",hrr:"jal",ibi:"opa",kgh:"kml",lcq:"ppr",mst:"mry",myt:"mry",sca:"hle",tie:"ras",tkk:"twm",tlw:"weo",tnf:"prs",ybd:"rki",yma:"lrr"},extLang:{aao:["aao","ar"],abh:["abh","ar"],abv:["abv","ar"],acm:["acm","ar"],acq:["acq","ar"],acw:["acw","ar"],acx:["acx","ar"],acy:["acy","ar"],adf:["adf","ar"],ads:["ads","sgn"],aeb:["aeb","ar"],aec:["aec","ar"],aed:["aed","sgn"],aen:["aen","sgn"],afb:["afb","ar"],afg:["afg","sgn"],ajp:["ajp","ar"],apc:["apc","ar"],apd:["apd","ar"],arb:["arb","ar"],arq:["arq","ar"],ars:["ars","ar"],ary:["ary","ar"],arz:["arz","ar"],ase:["ase","sgn"],asf:["asf","sgn"],asp:["asp","sgn"],asq:["asq","sgn"],asw:["asw","sgn"],auz:["auz","ar"],avl:["avl","ar"],ayh:["ayh","ar"],ayl:["ayl","ar"],ayn:["ayn","ar"],ayp:["ayp","ar"],bbz:["bbz","ar"],bfi:["bfi","sgn"],bfk:["bfk","sgn"],bjn:["bjn","ms"],bog:["bog","sgn"],bqn:["bqn","sgn"],bqy:["bqy","sgn"],btj:["btj","ms"],bve:["bve","ms"],bvl:["bvl","sgn"],bvu:["bvu","ms"],bzs:["bzs","sgn"],cdo:["cdo","zh"],cds:["cds","sgn"],cjy:["cjy","zh"],cmn:["cmn","zh"],coa:["coa","ms"],cpx:["cpx","zh"],csc:["csc","sgn"],csd:["csd","sgn"],cse:["cse","sgn"],csf:["csf","sgn"],csg:["csg","sgn"],csl:["csl","sgn"],csn:["csn","sgn"],csq:["csq","sgn"],csr:["csr","sgn"],czh:["czh","zh"],czo:["czo","zh"],doq:["doq","sgn"],dse:["dse","sgn"],dsl:["dsl","sgn"],dup:["dup","ms"],ecs:["ecs","sgn"],esl:["esl","sgn"],esn:["esn","sgn"],eso:["eso","sgn"],eth:["eth","sgn"],fcs:["fcs","sgn"],fse:["fse","sgn"],fsl:["fsl","sgn"],fss:["fss","sgn"],gan:["gan","zh"],gds:["gds","sgn"],gom:["gom","kok"],gse:["gse","sgn"],gsg:["gsg","sgn"],gsm:["gsm","sgn"],gss:["gss","sgn"],gus:["gus","sgn"],hab:["hab","sgn"],haf:["haf","sgn"],hak:["hak","zh"],hds:["hds","sgn"],hji:["hji","ms"],hks:["hks","sgn"],hos:["hos","sgn"],hps:["hps","sgn"],hsh:["hsh","sgn"],hsl:["hsl","sgn"],hsn:["hsn","zh"],icl:["icl","sgn"],ils:["ils","sgn"],inl:["inl","sgn"],ins:["ins","sgn"],
+ise:["ise","sgn"],isg:["isg","sgn"],isr:["isr","sgn"],jak:["jak","ms"],jax:["jax","ms"],jcs:["jcs","sgn"],jhs:["jhs","sgn"],jls:["jls","sgn"],jos:["jos","sgn"],jsl:["jsl","sgn"],jus:["jus","sgn"],kgi:["kgi","sgn"],knn:["knn","kok"],kvb:["kvb","ms"],kvk:["kvk","sgn"],kvr:["kvr","ms"],kxd:["kxd","ms"],lbs:["lbs","sgn"],lce:["lce","ms"],lcf:["lcf","ms"],liw:["liw","ms"],lls:["lls","sgn"],lsg:["lsg","sgn"],lsl:["lsl","sgn"],lso:["lso","sgn"],lsp:["lsp","sgn"],lst:["lst","sgn"],lsy:["lsy","sgn"],ltg:["ltg","lv"],lvs:["lvs","lv"],lzh:["lzh","zh"],max:["max","ms"],mdl:["mdl","sgn"],meo:["meo","ms"],mfa:["mfa","ms"],mfb:["mfb","ms"],mfs:["mfs","sgn"],min:["min","ms"],mnp:["mnp","zh"],mqg:["mqg","ms"],mre:["mre","sgn"],msd:["msd","sgn"],msi:["msi","ms"],msr:["msr","sgn"],mui:["mui","ms"],mzc:["mzc","sgn"],mzg:["mzg","sgn"],mzy:["mzy","sgn"],nan:["nan","zh"],nbs:["nbs","sgn"],ncs:["ncs","sgn"],nsi:["nsi","sgn"],nsl:["nsl","sgn"],nsp:["nsp","sgn"],nsr:["nsr","sgn"],nzs:["nzs","sgn"],okl:["okl","sgn"],orn:["orn","ms"],ors:["ors","ms"],pel:["pel","ms"],pga:["pga","ar"],pks:["pks","sgn"],prl:["prl","sgn"],prz:["prz","sgn"],psc:["psc","sgn"],psd:["psd","sgn"],pse:["pse","ms"],psg:["psg","sgn"],psl:["psl","sgn"],pso:["pso","sgn"],psp:["psp","sgn"],psr:["psr","sgn"],pys:["pys","sgn"],rms:["rms","sgn"],rsi:["rsi","sgn"],rsl:["rsl","sgn"],sdl:["sdl","sgn"],sfb:["sfb","sgn"],sfs:["sfs","sgn"],sgg:["sgg","sgn"],sgx:["sgx","sgn"],shu:["shu","ar"],slf:["slf","sgn"],sls:["sls","sgn"],sqk:["sqk","sgn"],sqs:["sqs","sgn"],ssh:["ssh","ar"],ssp:["ssp","sgn"],ssr:["ssr","sgn"],svk:["svk","sgn"],swc:["swc","sw"],swh:["swh","sw"],swl:["swl","sgn"],syy:["syy","sgn"],tmw:["tmw","ms"],tse:["tse","sgn"],tsm:["tsm","sgn"],tsq:["tsq","sgn"],tss:["tss","sgn"],tsy:["tsy","sgn"],tza:["tza","sgn"],ugn:["ugn","sgn"],ugy:["ugy","sgn"],ukl:["ukl","sgn"],uks:["uks","sgn"],urk:["urk","ms"],uzn:["uzn","uz"],uzs:["uzs","uz"],vgt:["vgt","sgn"],vkk:["vkk","ms"],vkt:["vkt","ms"],vsi:["vsi","sgn"],vsl:["vsl","sgn"],vsv:["vsv","sgn"],wuu:["wuu","zh"],xki:["xki","sgn"],xml:["xml","sgn"],xmm:["xmm","ms"],xms:["xms","sgn"],yds:["yds","sgn"],ysl:["ysl","sgn"],yue:["yue","zh"],zib:["zib","sgn"],zlm:["zlm","ms"],zmi:["zmi","ms"],zsl:["zsl","sgn"],zsm:["zsm","ms"]}},gr=/^[A-Z]{3}$/,fr=/-u(?:-[0-9a-z]{2,8})+/gi,mr={};Object.defineProperty(mr,"getCanonicalLocales",{enumerable:!1,configurable:!0,writable:!0,value:k});var vr={BHD:3,BYR:0,XOF:0,BIF:0,XAF:0,CLF:4,CLP:0,KMF:0,DJF:0,XPF:0,GNF:0,ISK:0,IQD:3,JPY:0,JOD:3,KRW:0,KWD:3,LYD:3,OMR:3,PYG:0,RWF:0,TND:3,UGX:0,UYI:0,VUV:0,VND:0};Ie(mr,"NumberFormat",{configurable:!0,writable:!0,value:O}),Ie(mr.NumberFormat,"prototype",{writable:!1}),$e.NumberFormat={"[[availableLocales]]":[],"[[relevantExtensionKeys]]":["nu"],"[[localeData]]":{}},Ie(mr.NumberFormat,"supportedLocalesOf",{configurable:!0,writable:!0,value:Ue.call(function(e){if(!Me.call(this,"[[availableLocales]]"))throw new TypeError("supportedLocalesOf() is not a constructor");var r=n(),t=arguments[1],a=this["[[availableLocales]]"],i=d(e);return r(),j(a,i,t)},$e.NumberFormat)}),Ie(mr.NumberFormat.prototype,"format",{configurable:!0,get:E}),Object.defineProperty(mr.NumberFormat.prototype,"formatToParts",{configurable:!0,enumerable:!1,writable:!0,value:L});var dr={arab:["٠","١","٢","٣","٤","٥","٦","٧","٨","٩"],arabext:["۰","۱","۲","۳","۴","۵","۶","۷","۸","۹"],bali:["᭐","᭑","᭒","᭓","᭔","᭕","᭖","᭗","᭘","᭙"],beng:["০","১","২","৩","৪","৫","৬","৭","৮","৯"],deva:["०","१","२","३","४","५","६","७","८","९"],fullwide:["０","１","２","３","４","５","６","７","８","９"],gujr:["૦","૧","૨","૩","૪","૫","૬","૭","૮","૯"],guru:["੦","੧","੨","੩","੪","੫","੬","੭","੮","੯"],hanidec:["〇","一","二","三","四","五","六","七","八","九"],khmr:["០","១","២","៣","៤","៥","៦","៧","៨","៩"],knda:["೦","೧","೨","೩","೪","೫","೬","೭","೮","೯"],laoo:["໐","໑","໒","໓","໔","໕","໖","໗","໘","໙"],latn:["0","1","2","3","4","5","6","7","8","9"],limb:["᥆","᥇","᥈","᥉","᥊","᥋","᥌","᥍","᥎","᥏"],mlym:["൦","൧","൨","൩","൪","൫","൬","൭","൮","൯"],mong:["᠐","᠑","᠒","᠓","᠔","᠕","᠖","᠗","᠘","᠙"],mymr:["၀","၁","၂","၃","၄","၅","၆","၇","၈","၉"],orya:["୦","୧","୨","୩","୪","୫","୬","୭","୮","୯"],tamldec:["௦","௧","௨","௩","௪","௫","௬","௭","௮","௯"],telu:["౦","౧","౨","౩","౪","౫","౬","౭","౮","౯"],thai:["๐","๑","๒","๓","๔","๕","๖","๗","๘","๙"],tibt:["༠","༡","༢","༣","༤","༥","༦","༧","༨","༩"]};Ie(mr.NumberFormat.prototype,"resolvedOptions",{configurable:!0,writable:!0,value:function(){var e=void 0,t=new r,n=["locale","numberingSystem","style","currency","currencyDisplay","minimumIntegerDigits","minimumFractionDigits","maximumFractionDigits","minimumSignificantDigits","maximumSignificantDigits","useGrouping"],a=null!==this&&"object"===Ne.typeof(this)&&l(this);if(!a||!a["[[initializedNumberFormat]]"])throw new TypeError("`this` value for resolvedOptions() is not an initialized Intl.NumberFormat object.");for(var i=0,o=n.length;i<o;i++)Me.call(a,e="[["+n[i]+"]]")&&(t[n[i]]={value:a[e],writable:!0,configurable:!0,enumerable:!0});return Re({},t)}});var hr=/(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g,pr=/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g,yr=/[rqQASjJgwWIQq]/,br=["era","year","month","day","weekday","quarter"],wr=["hour","minute","second","hour12","timeZoneName"],xr={second:{numeric:"s","2-digit":"ss"},minute:{numeric:"m","2-digit":"mm"},year:{numeric:"y","2-digit":"yy"},day:{numeric:"d","2-digit":"dd"},month:{numeric:"L","2-digit":"LL",narrow:"LLLLL",short:"LLL",long:"LLLL"},weekday:{narrow:"ccccc",short:"ccc",long:"cccc"}},jr=Re(null,{narrow:{},short:{},long:{}});Ie(mr,"DateTimeFormat",{configurable:!0,writable:!0,value:$}),Ie($,"prototype",{writable:!1});var Dr={weekday:["narrow","short","long"],era:["narrow","short","long"],year:["2-digit","numeric"],month:["2-digit","numeric","narrow","short","long"],day:["2-digit","numeric"],hour:["2-digit","numeric"],minute:["2-digit","numeric"],second:["2-digit","numeric"],timeZoneName:["short","long"]};$e.DateTimeFormat={"[[availableLocales]]":[],"[[relevantExtensionKeys]]":["ca","nu"],"[[localeData]]":{}},Ie(mr.DateTimeFormat,"supportedLocalesOf",{configurable:!0,writable:!0,value:Ue.call(function(e){if(!Me.call(this,"[[availableLocales]]"))throw new TypeError("supportedLocalesOf() is not a constructor");var r=n(),t=arguments[1],a=this["[[availableLocales]]"],i=d(e);return r(),j(a,i,t)},$e.NumberFormat)}),Ie(mr.DateTimeFormat.prototype,"format",{configurable:!0,get:V}),Object.defineProperty(mr.DateTimeFormat.prototype,"formatToParts",{enumerable:!1,writable:!0,configurable:!0,value:J}),Ie(mr.DateTimeFormat.prototype,"resolvedOptions",{writable:!0,configurable:!0,value:function(){var e=void 0,t=new r,n=["locale","calendar","numberingSystem","timeZone","hour12","weekday","era","year","month","day","hour","minute","second","timeZoneName"],a=null!==this&&"object"===Ne.typeof(this)&&l(this);if(!a||!a["[[initializedDateTimeFormat]]"])throw new TypeError("`this` value for resolvedOptions() is not an initialized Intl.DateTimeFormat object.");for(var i=0,o=n.length;i<o;i++)Me.call(a,e="[["+n[i]+"]]")&&(t[n[i]]={value:a[e],writable:!0,configurable:!0,enumerable:!0});return Re({},t)}});var zr=mr.__localeSensitiveProtos={Number:{},Date:{}};if(zr.Number.toLocaleString=function(){if("[object Number]"!==Object.prototype.toString.call(this))throw new TypeError("`this` value must be a number for Number.prototype.toLocaleString()");return T(new O(arguments[0],arguments[1]),this)},zr.Date.toLocaleString=function(){if("[object Date]"!==Object.prototype.toString.call(this))throw new TypeError("`this` value must be a Date instance for Date.prototype.toLocaleString()");var e=+this;if(isNaN(e))return"Invalid Date";var r=arguments[0],t=arguments[1];t=H(t,"any","all");var n=new $(r,t);return ee(n,e)},zr.Date.toLocaleDateString=function(){if("[object Date]"!==Object.prototype.toString.call(this))throw new TypeError("`this` value must be a Date instance for Date.prototype.toLocaleDateString()");var e=+this;if(isNaN(e))return"Invalid Date";var r=arguments[0],t=arguments[1];t=H(t,"date","date");var n=new $(r,t);return ee(n,e)},zr.Date.toLocaleTimeString=function(){if("[object Date]"!==Object.prototype.toString.call(this))throw new TypeError("`this` value must be a Date instance for Date.prototype.toLocaleTimeString()");var e=+this;if(isNaN(e))return"Invalid Date";var r=arguments[0],t=arguments[1];t=H(t,"time","time");var n=new $(r,t);return ee(n,e)},Ie(mr,"__applyLocaleSensitivePrototypes",{writable:!0,configurable:!0,value:function(){Ie(Number.prototype,"toLocaleString",{writable:!0,configurable:!0,value:zr.Number.toLocaleString}),Ie(Date.prototype,"toLocaleString",{writable:!0,configurable:!0,value:zr.Date.toLocaleString});for(var e in zr.Date)Me.call(zr.Date,e)&&Ie(Date.prototype,e,{writable:!0,configurable:!0,value:zr.Date[e]})}}),Ie(mr,"__addLocaleData",{value:function(e){if(!g(e.locale))throw new Error("Object passed doesn't identify itself with a valid language tag");ne(e,e.locale)}}),Ie(mr,"__disableRegExpRestore",{value:function(){$e.disableRegExpRestore=!0}}),"undefined"==typeof Intl)try{window.Intl=mr,mr.__applyLocaleSensitivePrototypes()}catch(e){}return mr});
+//# sourceMappingURL=Intl.min.js.map;define('intl', ['intl/Intl.min'], function (main) { return main; });
+
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define('i18next-xhr-backend/i18nextXHRBackend',factory) :
+  (global.i18nextXHRBackend = factory());
+}(this, (function () { 'use strict';
+
+var arr = [];
+var each = arr.forEach;
+var slice = arr.slice;
+
+function defaults(obj) {
+  each.call(slice.call(arguments, 1), function (source) {
+    if (source) {
+      for (var prop in source) {
+        if (obj[prop] === undefined) obj[prop] = source[prop];
+      }
+    }
+  });
+  return obj;
+}
+
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+function addQueryString(url, params) {
+  if (params && (typeof params === 'undefined' ? 'undefined' : _typeof(params)) === 'object') {
+    var queryString = '',
+        e = encodeURIComponent;
+
+    // Must encode data
+    for (var paramName in params) {
+      queryString += '&' + e(paramName) + '=' + e(params[paramName]);
+    }
+
+    if (!queryString) {
+      return url;
+    }
+
+    url = url + (url.indexOf('?') !== -1 ? '&' : '?') + queryString.slice(1);
+  }
+
+  return url;
+}
+
+// https://gist.github.com/Xeoncross/7663273
+function ajax(url, options, callback, data, cache) {
+
+  if (data && (typeof data === 'undefined' ? 'undefined' : _typeof(data)) === 'object') {
+    if (!cache) {
+      data['_t'] = new Date();
+    }
+    // URL encoded form data must be in querystring format
+    data = addQueryString('', data).slice(1);
+  }
+
+  if (options.queryStringParams) {
+    url = addQueryString(url, options.queryStringParams);
+  }
+
+  try {
+    var x = new (XMLHttpRequest || ActiveXObject)('MSXML2.XMLHTTP.3.0');
+    x.open(data ? 'POST' : 'GET', url, 1);
+    if (!options.crossDomain) {
+      x.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    }
+    x.withCredentials = !!options.withCredentials;
+    if (data) {
+      x.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    }
+    var h = options.customHeaders;
+    if (h) {
+      for (var i in h) {
+        x.setRequestHeader(i, h[i]);
+      }
+    }
+    x.onreadystatechange = function () {
+      x.readyState > 3 && callback && callback(x.responseText, x);
+    };
+    x.send(data);
+  } catch (e) {
+    console && console.log(e);
+  }
+}
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function getDefaults() {
+  return {
+    loadPath: '/locales/{{lng}}/{{ns}}.json',
+    addPath: 'locales/add/{{lng}}/{{ns}}',
+    allowMultiLoading: false,
+    parse: JSON.parse,
+    crossDomain: false,
+    ajax: ajax
+  };
+}
+
+var Backend = function () {
+  function Backend(services) {
+    var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+    _classCallCheck(this, Backend);
+
+    this.init(services, options);
+
+    this.type = 'backend';
+  }
+
+  _createClass(Backend, [{
+    key: 'init',
+    value: function init(services) {
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+
+      this.services = services;
+      this.options = defaults(options, this.options || {}, getDefaults());
+    }
+  }, {
+    key: 'readMulti',
+    value: function readMulti(languages, namespaces, callback) {
+      var loadPath = this.options.loadPath;
+      if (typeof this.options.loadPath === 'function') {
+        loadPath = this.options.loadPath(languages, namespaces);
+      }
+
+      var url = this.services.interpolator.interpolate(loadPath, { lng: languages.join('+'), ns: namespaces.join('+') });
+
+      this.loadUrl(url, callback);
+    }
+  }, {
+    key: 'read',
+    value: function read(language, namespace, callback) {
+      var loadPath = this.options.loadPath;
+      if (typeof this.options.loadPath === 'function') {
+        loadPath = this.options.loadPath([language], [namespace]);
+      }
+
+      var url = this.services.interpolator.interpolate(loadPath, { lng: language, ns: namespace });
+
+      this.loadUrl(url, callback);
+    }
+  }, {
+    key: 'loadUrl',
+    value: function loadUrl(url, callback) {
+      var _this = this;
+
+      this.options.ajax(url, this.options, function (data, xhr) {
+        if (xhr.status >= 500 && xhr.status < 600) return callback('failed loading ' + url, true /* retry */);
+        if (xhr.status >= 400 && xhr.status < 500) return callback('failed loading ' + url, false /* no retry */);
+
+        var ret = void 0,
+            err = void 0;
+        try {
+          ret = _this.options.parse(data, url);
+        } catch (e) {
+          err = 'failed parsing ' + url + ' to json';
+        }
+        if (err) return callback(err, false);
+        callback(null, ret);
+      });
+    }
+  }, {
+    key: 'create',
+    value: function create(languages, namespace, key, fallbackValue) {
+      var _this2 = this;
+
+      if (typeof languages === 'string') languages = [languages];
+
+      var payload = {};
+      payload[key] = fallbackValue || '';
+
+      languages.forEach(function (lng) {
+        var url = _this2.services.interpolator.interpolate(_this2.options.addPath, { lng: lng, ns: namespace });
+
+        _this2.options.ajax(url, _this2.options, function (data, xhr) {
+          //const statusCode = xhr.status.toString();
+          // TODO: if statusCode === 4xx do log
+        }, payload);
+      });
+    }
+  }]);
+
+  return Backend;
+}();
+
+Backend.type = 'backend';
+
+return Backend;
+
+})));
+;define('i18next-xhr-backend', ['i18next-xhr-backend/i18nextXHRBackend'], function (main) { return main; });
+
 define('aurelia-templating-resources/aurelia-templating-resources',['exports', 'aurelia-pal', './compose', './if', './with', './repeat', './show', './hide', './sanitize-html', './replaceable', './focus', 'aurelia-templating', './css-resource', './html-sanitizer', './attr-binding-behavior', './binding-mode-behaviors', './throttle-binding-behavior', './debounce-binding-behavior', './self-binding-behavior', './signal-binding-behavior', './binding-signaler', './update-trigger-binding-behavior', './abstract-repeater', './repeat-strategy-locator', './html-resource-plugin', './null-repeat-strategy', './array-repeat-strategy', './map-repeat-strategy', './set-repeat-strategy', './number-repeat-strategy', './repeat-utilities', './analyze-view-factory', './aurelia-hide-style'], function (exports, _aureliaPal, _compose, _if, _with, _repeat, _show, _hide, _sanitizeHtml, _replaceable, _focus, _aureliaTemplating, _cssResource, _htmlSanitizer, _attrBindingBehavior, _bindingModeBehaviors, _throttleBindingBehavior, _debounceBindingBehavior, _selfBindingBehavior, _signalBindingBehavior, _bindingSignaler, _updateTriggerBindingBehavior, _abstractRepeater, _repeatStrategyLocator, _htmlResourcePlugin, _nullRepeatStrategy, _arrayRepeatStrategy, _mapRepeatStrategy, _setRepeatStrategy, _numberRepeatStrategy, _repeatUtilities, _analyzeViewFactory, _aureliaHideStyle) {
   'use strict';
 
@@ -27357,4 +31179,4 @@ define('aurelia-testing/wait',['exports'], function (exports) {
     }, options);
   }
 });
-function _aureliaConfigureModuleLoader(){requirejs.config({"baseUrl":"src/","paths":{"aurelia-binding":"../node_modules/aurelia-binding/dist/amd/aurelia-binding","aurelia-bootstrapper":"../node_modules/aurelia-bootstrapper/dist/amd/aurelia-bootstrapper","aurelia-dependency-injection":"../node_modules/aurelia-dependency-injection/dist/amd/aurelia-dependency-injection","aurelia-event-aggregator":"../node_modules/aurelia-event-aggregator/dist/amd/aurelia-event-aggregator","aurelia-framework":"../node_modules/aurelia-framework/dist/amd/aurelia-framework","aurelia-history":"../node_modules/aurelia-history/dist/amd/aurelia-history","aurelia-history-browser":"../node_modules/aurelia-history-browser/dist/amd/aurelia-history-browser","aurelia-loader":"../node_modules/aurelia-loader/dist/amd/aurelia-loader","aurelia-loader-default":"../node_modules/aurelia-loader-default/dist/amd/aurelia-loader-default","aurelia-logging":"../node_modules/aurelia-logging/dist/amd/aurelia-logging","aurelia-logging-console":"../node_modules/aurelia-logging-console/dist/amd/aurelia-logging-console","aurelia-metadata":"../node_modules/aurelia-metadata/dist/amd/aurelia-metadata","aurelia-pal":"../node_modules/aurelia-pal/dist/amd/aurelia-pal","aurelia-pal-browser":"../node_modules/aurelia-pal-browser/dist/amd/aurelia-pal-browser","aurelia-path":"../node_modules/aurelia-path/dist/amd/aurelia-path","aurelia-polyfills":"../node_modules/aurelia-polyfills/dist/amd/aurelia-polyfills","aurelia-route-recognizer":"../node_modules/aurelia-route-recognizer/dist/amd/aurelia-route-recognizer","aurelia-router":"../node_modules/aurelia-router/dist/amd/aurelia-router","aurelia-task-queue":"../node_modules/aurelia-task-queue/dist/amd/aurelia-task-queue","aurelia-templating":"../node_modules/aurelia-templating/dist/amd/aurelia-templating","aurelia-templating-binding":"../node_modules/aurelia-templating-binding/dist/amd/aurelia-templating-binding","text":"../node_modules/text/text","app-bundle":"../scripts/app-bundle"},"packages":[{"name":"aurelia-templating-resources","location":"../node_modules/aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"../node_modules/aurelia-templating-router/dist/amd","main":"aurelia-templating-router"},{"name":"aurelia-testing","location":"../node_modules/aurelia-testing/dist/amd","main":"aurelia-testing"}],"stubModules":["text"],"shim":{},"bundles":{"app-bundle":["app","environment","main","resources/index"]}})}
+function _aureliaConfigureModuleLoader(){requirejs.config({"baseUrl":"src/","paths":{"aurelia-binding":"../node_modules/aurelia-binding/dist/amd/aurelia-binding","aurelia-bootstrapper":"../node_modules/aurelia-bootstrapper/dist/amd/aurelia-bootstrapper","aurelia-dependency-injection":"../node_modules/aurelia-dependency-injection/dist/amd/aurelia-dependency-injection","aurelia-event-aggregator":"../node_modules/aurelia-event-aggregator/dist/amd/aurelia-event-aggregator","aurelia-framework":"../node_modules/aurelia-framework/dist/amd/aurelia-framework","aurelia-history":"../node_modules/aurelia-history/dist/amd/aurelia-history","aurelia-history-browser":"../node_modules/aurelia-history-browser/dist/amd/aurelia-history-browser","aurelia-loader":"../node_modules/aurelia-loader/dist/amd/aurelia-loader","aurelia-loader-default":"../node_modules/aurelia-loader-default/dist/amd/aurelia-loader-default","aurelia-logging":"../node_modules/aurelia-logging/dist/amd/aurelia-logging","aurelia-logging-console":"../node_modules/aurelia-logging-console/dist/amd/aurelia-logging-console","aurelia-metadata":"../node_modules/aurelia-metadata/dist/amd/aurelia-metadata","aurelia-pal":"../node_modules/aurelia-pal/dist/amd/aurelia-pal","aurelia-pal-browser":"../node_modules/aurelia-pal-browser/dist/amd/aurelia-pal-browser","aurelia-path":"../node_modules/aurelia-path/dist/amd/aurelia-path","aurelia-polyfills":"../node_modules/aurelia-polyfills/dist/amd/aurelia-polyfills","aurelia-route-recognizer":"../node_modules/aurelia-route-recognizer/dist/amd/aurelia-route-recognizer","aurelia-router":"../node_modules/aurelia-router/dist/amd/aurelia-router","aurelia-task-queue":"../node_modules/aurelia-task-queue/dist/amd/aurelia-task-queue","aurelia-templating":"../node_modules/aurelia-templating/dist/amd/aurelia-templating","aurelia-templating-binding":"../node_modules/aurelia-templating-binding/dist/amd/aurelia-templating-binding","text":"../node_modules/text/text","app-bundle":"../scripts/app-bundle"},"packages":[{"name":"i18next","location":"../node_modules/i18next/dist/umd","main":"i18next"},{"name":"aurelia-i18n","location":"../node_modules/aurelia-i18n/dist/amd","main":"aurelia-i18n"},{"name":"intl","location":"../node_modules/intl/dist","main":"Intl.min"},{"name":"i18next-xhr-backend","location":"../node_modules/i18next-xhr-backend/dist/umd","main":"i18nextXHRBackend"},{"name":"aurelia-templating-resources","location":"../node_modules/aurelia-templating-resources/dist/amd","main":"aurelia-templating-resources"},{"name":"aurelia-templating-router","location":"../node_modules/aurelia-templating-router/dist/amd","main":"aurelia-templating-router"},{"name":"aurelia-testing","location":"../node_modules/aurelia-testing/dist/amd","main":"aurelia-testing"}],"stubModules":["text"],"shim":{},"bundles":{"app-bundle":["app","environment","main","resources/index"]}})}
